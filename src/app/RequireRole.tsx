@@ -12,6 +12,7 @@ export default function RequireRole({ role }: { role: UserRole }) {
 
   if (loading) return <div className="center-screen loading-state">Loading…</div>
   if (!investorUser || !investorUser.is_active) return <Navigate to="/login" replace />
+  if (investorUser.invite_status === 'pending') return <Navigate to="/accept-invite" replace />
   if (investorUser.role !== role) {
     return <Navigate to={investorUser.role === 'admin' ? '/admin/properties' : '/dashboard'} replace />
   }
