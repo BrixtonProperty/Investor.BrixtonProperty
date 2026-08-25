@@ -10,7 +10,10 @@ import StatList from '../../../components/StatList'
 import Modal from '../../../components/Modal'
 import type { Property, Notice } from '../../../types/database.types'
 
-type PropertyForm = Pick<Property, 'name' | 'location' | 'description' | 'total_value' | 'valuation_date' | 'type' | 'size' | 'occupancy' | 'year_built'>
+type PropertyForm = Pick<
+  Property,
+  'name' | 'location' | 'description' | 'total_value' | 'initial_investment_amount' | 'valuation_date' | 'type' | 'size' | 'occupancy' | 'year_built'
+>
 
 export default function PropertyDetailAdminPage() {
   const { id } = useParams<{ id: string }>()
@@ -41,6 +44,7 @@ export default function PropertyDetailAdminPage() {
         location: p.location,
         description: p.description,
         total_value: p.total_value,
+        initial_investment_amount: p.initial_investment_amount,
         valuation_date: p.valuation_date,
         type: p.type,
         size: p.size,
@@ -141,6 +145,7 @@ export default function PropertyDetailAdminPage() {
           <StatList
             rows={[
               { icon: '$', label: 'Latest Valuation', value: fmtCurrency(p.total_value), caption: `As at ${fmtDate(p.valuation_date)}` },
+              { icon: '$', label: 'Initial Investment Amount', value: p.initial_investment_amount != null ? fmtCurrency(p.initial_investment_amount) : '—' },
               { icon: '📈', label: 'Property Type', value: p.type || '—' },
               { icon: '📍', label: 'Location', value: p.location },
               { icon: '🏢', label: 'Property Size', value: p.size || '—' },
@@ -250,6 +255,16 @@ export default function PropertyDetailAdminPage() {
               required
               value={form.total_value}
               onChange={(e) => setForm({ ...form, total_value: Number(e.target.value) })}
+            />
+            <label className="field-label">Initial Investment Amount ($)</label>
+            <input
+              className="form-input"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="What Brixton originally paid to acquire it"
+              value={form.initial_investment_amount ?? ''}
+              onChange={(e) => setForm({ ...form, initial_investment_amount: e.target.value ? Number(e.target.value) : null })}
             />
             <label className="field-label">Valuation Date</label>
             <input

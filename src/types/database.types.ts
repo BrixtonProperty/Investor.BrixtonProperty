@@ -43,6 +43,7 @@ export type Property = {
   description: string
   total_value: number
   valuation_date: string
+  initial_investment_amount: number | null
   type: string
   size: string | null
   occupancy: string | null

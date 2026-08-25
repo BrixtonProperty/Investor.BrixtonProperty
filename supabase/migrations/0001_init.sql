@@ -48,6 +48,7 @@ create table if not exists properties (
   description text not null default '',
   total_value numeric(14, 2) not null,   -- "Latest Valuation"
   valuation_date date not null,
+  initial_investment_amount numeric(14, 2),   -- what Brixton originally paid to acquire it
   type text not null default '',
   size text,
   occupancy text,

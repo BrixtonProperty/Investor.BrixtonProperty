@@ -18,6 +18,7 @@ export default function PropertiesAdminPage() {
     name: '',
     location: '',
     total_value: '',
+    initial_investment_amount: '',
     valuation_date: new Date().toISOString().slice(0, 10),
     type: '',
   })
@@ -29,12 +30,20 @@ export default function PropertiesAdminPage() {
         name: form.name,
         location: form.location,
         total_value: Number(form.total_value),
+        initial_investment_amount: form.initial_investment_amount ? Number(form.initial_investment_amount) : null,
         valuation_date: form.valuation_date,
         type: form.type,
         description: '',
       })
       setShowAdd(false)
-      setForm({ name: '', location: '', total_value: '', valuation_date: new Date().toISOString().slice(0, 10), type: '' })
+      setForm({
+        name: '',
+        location: '',
+        total_value: '',
+        initial_investment_amount: '',
+        valuation_date: new Date().toISOString().slice(0, 10),
+        type: '',
+      })
       toast.show(`${created.name} added.`)
     } catch (err) {
       toast.show(err instanceof Error ? err.message : 'Could not add property.', 'error')
@@ -65,6 +74,7 @@ export default function PropertiesAdminPage() {
             location={p.location}
             stats={[
               { label: 'LATEST VALUATION', value: fmtCurrency(p.total_value) },
+              { label: 'INITIAL INVESTMENT', value: p.initial_investment_amount != null ? fmtCurrency(p.initial_investment_amount) : '—' },
               { label: 'TYPE', value: p.type || '—' },
               { label: 'AS AT', value: fmtDate(p.valuation_date) },
             ]}
@@ -107,6 +117,16 @@ export default function PropertiesAdminPage() {
               required
               value={form.total_value}
               onChange={(e) => setForm({ ...form, total_value: e.target.value })}
+            />
+            <label className="field-label">Initial Investment Amount ($)</label>
+            <input
+              className="form-input"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="What Brixton originally paid to acquire it"
+              value={form.initial_investment_amount}
+              onChange={(e) => setForm({ ...form, initial_investment_amount: e.target.value })}
             />
             <label className="field-label">Valuation Date</label>
             <input
