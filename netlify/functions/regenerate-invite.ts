@@ -1,4 +1,4 @@
-import { adminClient, requireVerifiedAdmin, json, handleError, HttpError } from './_shared'
+import { adminClient, requireVerifiedAdmin, resolveAppUrl, json, handleError, HttpError } from './_shared'
 
 interface Body {
   investorUserId: string
@@ -24,7 +24,7 @@ export default async (req: Request): Promise<Response> => {
     // is a resend), and generateLink(type:'invite') only works for brand-new
     // users; it fails with "email_exists" otherwise. Verifying a magiclink
     // still lands them on /accept-invite to set a password, same as invite.
-    const appUrl = process.env.APP_URL || process.env.URL || 'http://localhost:5173'
+    const appUrl = resolveAppUrl(req)
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: target.email,

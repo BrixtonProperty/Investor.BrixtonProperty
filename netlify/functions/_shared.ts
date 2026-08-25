@@ -60,6 +60,25 @@ export async function requireVerifiedAdmin(req: Request): Promise<{ userId: stri
   return { userId: userData.user.id }
 }
 
+/**
+ * Resolves the app's public origin for building invite/redirect links.
+ * Priority: explicit APP_URL env var (set this once you know your final
+ * domain) > the Host the browser actually used to call this function
+ * (works for the .netlify.app URL, a custom domain, or a deploy preview,
+ * with zero config) > Netlify's own URL var > localhost for local dev.
+ * IMPORTANT: whatever this resolves to MUST also be on Supabase's Auth ->
+ * URL Configuration -> Redirect URLs allowlist, or Supabase will silently
+ * substitute its own default Site URL instead of erroring.
+ */
+export function resolveAppUrl(req: Request): string {
+  if (process.env.APP_URL) return process.env.APP_URL
+  const proto = req.headers.get('x-forwarded-proto') || 'https'
+  const host = req.headers.get('x-forwarded-host') || req.headers.get('host')
+  if (host) return `${proto}://${host}`
+  if (process.env.URL) return process.env.URL
+  return 'http://localhost:5173'
+}
+
 export function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 }

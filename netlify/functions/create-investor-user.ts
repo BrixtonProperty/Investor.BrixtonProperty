@@ -1,4 +1,4 @@
-import { adminClient, requireVerifiedAdmin, json, handleError, HttpError } from './_shared'
+import { adminClient, requireVerifiedAdmin, resolveAppUrl, json, handleError, HttpError } from './_shared'
 
 interface Body {
   name: string
@@ -39,7 +39,7 @@ export default async (req: Request): Promise<Response> => {
     // generateLink(type:'invite') both creates the auth.users row AND returns the
     // invite link in one call — it errors with "email_exists" if the user is
     // created separately first (e.g. via admin.createUser), so don't do that.
-    const appUrl = process.env.APP_URL || process.env.URL || 'http://localhost:5173'
+    const appUrl = resolveAppUrl(req)
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'invite',
       email: body.email,
