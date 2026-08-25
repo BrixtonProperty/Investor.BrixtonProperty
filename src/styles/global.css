@@ -127,14 +127,14 @@ h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; mar
 .prop-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
 .prop-card{ overflow:hidden; cursor:pointer; position:relative; }
 .prop-card:hover{ border-color:var(--orange); }
-.prop-img{ height:150px; background:#ddd center/cover; position:relative; }
+.prop-img{ height:260px; background:#ddd center/cover; position:relative; }
 .prop-body{ padding:16px 18px 18px; }
 .prop-name{ display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:600; margin-bottom:2px; }
 .prop-loc{ font-size:12px; color:var(--text-faint); margin-bottom:14px; }
 .prop-stats{ display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:12px; }
 .prop-stats div{ font-size:13px; }
 .prop-stats .plabel{ font-size:10px; color:var(--text-faint); letter-spacing:.5px; margin-bottom:3px; }
-.add-tile{ border:2px dashed var(--border); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:220px; cursor:pointer; color:var(--text-faint); background:none; }
+.add-tile{ border:2px dashed var(--border); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:350px; cursor:pointer; color:var(--text-faint); background:none; }
 .add-tile:hover{ border-color:var(--orange); color:var(--orange); }
 .add-tile .plus{ font-size:28px; }
 
