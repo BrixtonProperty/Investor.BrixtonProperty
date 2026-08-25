@@ -56,11 +56,12 @@ export function useUpdateInvestorUser() {
 export interface CreateInvestorUserInput {
   name: string
   email: string
+  role?: 'admin' | 'investor'
   investorAccountId?: string
   newAccountDisplayName?: string
 }
 export interface CreateInvestorUserResult {
-  investorAccountId: string
+  investorAccountId: string | null
   investorUserId: string
   inviteLink: string
 }

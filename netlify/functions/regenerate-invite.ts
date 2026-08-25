@@ -20,9 +20,13 @@ export default async (req: Request): Promise<Response> => {
       .single()
     if (targetError || !target) throw new HttpError(404, 'Investor user not found.')
 
+    // 'magiclink', not 'invite' — the user already exists at this point (this
+    // is a resend), and generateLink(type:'invite') only works for brand-new
+    // users; it fails with "email_exists" otherwise. Verifying a magiclink
+    // still lands them on /accept-invite to set a password, same as invite.
     const appUrl = process.env.APP_URL || process.env.URL || 'http://localhost:5173'
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-      type: 'invite',
+      type: 'magiclink',
       email: target.email,
       options: { redirectTo: `${appUrl}/accept-invite` },
     })

@@ -15,7 +15,15 @@ export default function InvestorsAdminPage() {
   const [search, setSearch] = useState('')
   const [addOpen, setAddOpen] = useState(false)
   const [inviteLink, setInviteLink] = useState<string | null>(null)
-  const [form, setForm] = useState({ name: '', email: '', newAccountDisplayName: '', existingAccountId: '' })
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    role: 'investor' as 'admin' | 'investor',
+    newAccountDisplayName: '',
+    existingAccountId: '',
+  })
+
+  const admins = (users.data ?? []).filter((u) => u.role === 'admin')
 
   const loginCountByAccount = useMemo(() => {
     const map = new Map<string, number>()
@@ -33,20 +41,21 @@ export default function InvestorsAdminPage() {
       const result = await createInvestor.mutateAsync({
         name: form.name,
         email: form.email,
-        investorAccountId: form.existingAccountId || undefined,
-        newAccountDisplayName: form.existingAccountId ? undefined : form.newAccountDisplayName,
+        role: form.role,
+        investorAccountId: form.role === 'investor' ? form.existingAccountId || undefined : undefined,
+        newAccountDisplayName: form.role === 'investor' && !form.existingAccountId ? form.newAccountDisplayName : undefined,
       })
       setInviteLink(result.inviteLink)
-      toast.show('Investor created.')
+      toast.show(form.role === 'admin' ? 'Admin created.' : 'Investor created.')
     } catch (err) {
-      toast.show(err instanceof Error ? err.message : 'Could not create investor.', 'error')
+      toast.show(err instanceof Error ? err.message : 'Could not create login.', 'error')
     }
   }
 
   function closeAdd() {
     setAddOpen(false)
     setInviteLink(null)
-    setForm({ name: '', email: '', newAccountDisplayName: '', existingAccountId: '' })
+    setForm({ name: '', email: '', role: 'investor', newAccountDisplayName: '', existingAccountId: '' })
   }
 
   if (accounts.isLoading) return <div className="loading-state">Loading investors…</div>
@@ -93,8 +102,27 @@ export default function InvestorsAdminPage() {
         ))}
       </div>
 
+      <div className="panel-head" style={{ padding: '0', marginTop: 28, marginBottom: 4 }}>
+        <h4>Brixton Admins</h4>
+      </div>
+      <div className="card">
+        {admins.length === 0 && <div className="empty-state">No admins yet.</div>}
+        {admins.map((u) => (
+          <div className="admin-table-row" style={{ gridTemplateColumns: '2fr 1fr 1fr', cursor: 'default' }} key={u.id}>
+            <div>
+              <div style={{ fontWeight: 600 }}>{u.name}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-faint)' }}>{u.email}</div>
+            </div>
+            <span className={'status-pill ' + (u.is_active ? 'active' : 'inactive')}>{u.is_active ? 'Active' : 'Deactivated'}</span>
+            <span className={'status-pill ' + (u.invite_status === 'accepted' ? 'active' : 'pending')}>
+              {u.invite_status === 'accepted' ? 'Signed up' : 'Invite pending'}
+            </span>
+          </div>
+        ))}
+      </div>
+
       {addOpen && (
-        <Modal title="Add Investor" onClose={closeAdd} footer={
+        <Modal title={form.role === 'admin' ? 'Add Admin' : 'Add Investor'} onClose={closeAdd} footer={
           inviteLink ? (
             <button className="btn-solid" type="button" onClick={closeAdd}>
               Done
@@ -105,7 +133,7 @@ export default function InvestorsAdminPage() {
                 Cancel
               </button>
               <button className="btn-solid" type="submit" form="add-investor-form" disabled={createInvestor.isPending}>
-                {createInvestor.isPending ? 'Creating…' : 'Create Investor'}
+                {createInvestor.isPending ? 'Creating…' : form.role === 'admin' ? 'Create Admin' : 'Create Investor'}
               </button>
             </>
           )
@@ -129,33 +157,61 @@ export default function InvestorsAdminPage() {
             </>
           ) : (
             <form id="add-investor-form" onSubmit={handleCreate}>
-              <label className="field-label">Investor name</label>
+              <label className="field-label">Type of login</label>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <button
+                  type="button"
+                  className={form.role === 'investor' ? 'btn-solid' : 'btn-outline'}
+                  onClick={() => setForm({ ...form, role: 'investor' })}
+                >
+                  Investor
+                </button>
+                <button
+                  type="button"
+                  className={form.role === 'admin' ? 'btn-solid' : 'btn-outline'}
+                  onClick={() => setForm({ ...form, role: 'admin' })}
+                >
+                  Admin (Brixton staff)
+                </button>
+              </div>
+
+              <label className="field-label">{form.role === 'admin' ? 'Admin name' : 'Investor name'}</label>
               <input className="form-input" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               <label className="field-label">Email</label>
               <input className="form-input" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-              <label className="field-label">Investor entity</label>
-              <select
-                className="form-select"
-                value={form.existingAccountId}
-                onChange={(e) => setForm({ ...form, existingAccountId: e.target.value })}
-              >
-                <option value="">+ Create a new entity…</option>
-                {(accounts.data ?? []).map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.display_name} (add as an additional login)
-                  </option>
-                ))}
-              </select>
-              {!form.existingAccountId && (
+
+              {form.role === 'admin' ? (
+                <p className="form-note">
+                  Admin accounts don't own any investor entity or holdings — they'll be forced through MFA
+                  enrollment before reaching the admin panel.
+                </p>
+              ) : (
                 <>
-                  <label className="field-label">New entity name</label>
-                  <input
-                    className="form-input"
-                    required
-                    placeholder="e.g. Smith Family Trust"
-                    value={form.newAccountDisplayName}
-                    onChange={(e) => setForm({ ...form, newAccountDisplayName: e.target.value })}
-                  />
+                  <label className="field-label">Investor entity</label>
+                  <select
+                    className="form-select"
+                    value={form.existingAccountId}
+                    onChange={(e) => setForm({ ...form, existingAccountId: e.target.value })}
+                  >
+                    <option value="">+ Create a new entity…</option>
+                    {(accounts.data ?? []).map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.display_name} (add as an additional login)
+                      </option>
+                    ))}
+                  </select>
+                  {!form.existingAccountId && (
+                    <>
+                      <label className="field-label">New entity name</label>
+                      <input
+                        className="form-input"
+                        required
+                        placeholder="e.g. Smith Family Trust"
+                        value={form.newAccountDisplayName}
+                        onChange={(e) => setForm({ ...form, newAccountDisplayName: e.target.value })}
+                      />
+                    </>
+                  )}
                 </>
               )}
             </form>
