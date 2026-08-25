@@ -25,7 +25,7 @@ input, select, textarea{ font-family:inherit; }
   display:flex; flex-direction:column;
   position:sticky; top:0; height:100vh; overflow-y:auto;
 }
-.brand-logo{ height:38px; margin-bottom:20px; object-fit:contain; }
+.brand-logo{ max-height:64px; max-width:100%; width:auto; height:auto; margin-bottom:20px; object-fit:contain; display:block; }
 .portal-label{
   font-size:12px; letter-spacing:2px; color:var(--orange);
   border-left:2px solid var(--orange); padding-left:10px; margin-bottom:18px;
@@ -211,7 +211,7 @@ h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; mar
 .login-panel{ flex:1; display:flex; flex-direction:column; justify-content:center; padding:60px 90px; position:relative; background:var(--bg); }
 .login-lang{ position:absolute; top:28px; right:36px; font-size:13px; color:var(--text-dim); }
 .login-logo{ margin-bottom:30px; }
-.login-logo img{ height:52px; }
+.login-logo img{ max-height:72px; max-width:100%; width:auto; height:auto; object-fit:contain; display:block; }
 .login-panel h1{ font-family:'Georgia',serif; font-weight:400; font-size:27px; margin:0 0 8px; }
 .login-panel .sub-text{ color:var(--text-dim); font-size:14px; margin-bottom:30px; }
 .field-label{ font-size:13px; margin-bottom:8px; display:block; font-weight:600; }
