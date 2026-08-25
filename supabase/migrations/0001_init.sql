@@ -239,14 +239,23 @@ end $$;
 create or replace function guard_investor_user_update() returns trigger
 language plpgsql as $$
 begin
-  if not is_admin_verified() then
-    if new.role is distinct from old.role
-       or new.investor_account_id is distinct from old.investor_account_id
-       or new.is_active is distinct from old.is_active
-       or new.invite_status is distinct from old.invite_status
-       or new.invite_link is distinct from old.invite_link then
-      raise exception 'not permitted to change protected fields';
-    end if;
+  -- service_role (Netlify Functions, local bootstrap script) is a trusted
+  -- server-side caller and bypasses this guard entirely — it has no user
+  -- JWT for is_admin_verified() to recognize, but it's the mechanism by
+  -- which invite_status/invite_link/is_active are legitimately managed.
+  if auth.role() = 'service_role' or is_admin_verified() then
+    return new;
+  end if;
+  -- invite_status is deliberately NOT protected here: the investor's own
+  -- (pre-MFA) session must be able to flip pending -> accepted on their own
+  -- row when they finish setting a password. It's a low-stakes progress
+  -- flag, not an access-control field.
+  if new.role is distinct from old.role
+     or new.investor_account_id is distinct from old.investor_account_id
+     or new.is_active is distinct from old.is_active
+     or new.invite_link is distinct from old.invite_link
+     or new.email is distinct from old.email then
+    raise exception 'not permitted to change protected fields';
   end if;
   return new;
 end; $$;
