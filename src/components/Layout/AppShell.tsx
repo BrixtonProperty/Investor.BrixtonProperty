@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../app/AuthProvider'
 import { useSiteSettings } from '../../queries/siteSettings'
 import { publicAssetUrl } from '../../lib/signedUrl'
@@ -27,15 +27,25 @@ const adminNav: NavItem[] = [
 ]
 const adminSecondaryNav: NavItem[] = [{ to: '/admin/settings', label: 'Site Settings' }]
 
+// Admin's read-only preview of the investor experience -- unscoped across
+// every property, since an admin has no personal holdings of their own.
+const portfolioNav: NavItem[] = [
+  { to: '/admin/portfolio', label: 'Dashboard' },
+  { to: '/admin/portfolio/investments', label: 'Investments' },
+  { to: '/admin/portfolio/updates', label: 'Investor Updates' },
+]
+
 export default function AppShell() {
   const { investorUser } = useAuth()
   const { data: settings } = useSiteSettings()
   const navigate = useNavigate()
+  const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
 
   const isAdmin = investorUser?.role === 'admin'
-  const nav = isAdmin ? adminNav : investorNav
-  const navSecondary = isAdmin ? adminSecondaryNav : investorSecondaryNav
+  const isPortfolioMode = isAdmin && location.pathname.startsWith('/admin/portfolio')
+  const nav = isPortfolioMode ? portfolioNav : isAdmin ? adminNav : investorNav
+  const navSecondary = isPortfolioMode ? [] : isAdmin ? adminSecondaryNav : investorSecondaryNav
   const logoUrl = publicAssetUrl(settings?.logo_storage_path)
   const badgeUrl = publicAssetUrl(settings?.badge_storage_path)
 
@@ -54,7 +64,7 @@ export default function AppShell() {
             {settings?.company_name ?? 'Brixton Property'}
           </div>
         )}
-        <div className="portal-label">{isAdmin ? 'ADMIN PANEL' : 'INVESTOR PORTAL'}</div>
+        <div className="portal-label">{isPortfolioMode ? 'INVESTOR VIEW' : isAdmin ? 'ADMIN PANEL' : 'INVESTOR PORTAL'}</div>
         <div className="nav">
           {nav.map((item) => (
             <NavLink
@@ -97,7 +107,18 @@ export default function AppShell() {
 
       <div className="main">
         <div className="topbar">
-          <div className="topbar-badges">{isAdmin && <span className="role-badge">ADMIN</span>}</div>
+          <div className="topbar-badges">
+            {isAdmin ? (
+              <div className="mode-toggle">
+                <button className={!isPortfolioMode ? 'active' : ''} onClick={() => navigate('/admin/properties')} type="button">
+                  Admin Panel
+                </button>
+                <button className={isPortfolioMode ? 'active' : ''} onClick={() => navigate('/admin/portfolio')} type="button">
+                  Investor View
+                </button>
+              </div>
+            ) : null}
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
             <div className="bell">🔔</div>
             <div className="user" onClick={() => setMenuOpen((v) => !v)}>

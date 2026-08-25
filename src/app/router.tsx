@@ -26,6 +26,12 @@ import InvestorsAdminPage from '../features/admin/investors/InvestorsAdminPage'
 import InvestorDetailAdminPage from '../features/admin/investors/InvestorDetailAdminPage'
 import DocumentCategoriesAdminPage from '../features/admin/documentCategories/DocumentCategoriesAdminPage'
 import SiteSettingsAdminPage from '../features/admin/settings/SiteSettingsAdminPage'
+import PortfolioDashboardPage from '../features/admin/portfolio/PortfolioDashboardPage'
+import PortfolioInvestmentsPage from '../features/admin/portfolio/PortfolioInvestmentsPage'
+import PortfolioPropertyDetailPage from '../features/admin/portfolio/PortfolioPropertyDetailPage'
+import PortfolioPhotosPage from '../features/admin/portfolio/PortfolioPhotosPage'
+import PortfolioDocumentsPage from '../features/admin/portfolio/PortfolioDocumentsPage'
+import PortfolioUpdatesPage from '../features/admin/portfolio/PortfolioUpdatesPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -68,6 +74,12 @@ export const router = createBrowserRouter([
               { path: '/admin/investors/:id', element: <InvestorDetailAdminPage /> },
               { path: '/admin/document-categories', element: <DocumentCategoriesAdminPage /> },
               { path: '/admin/settings', element: <SiteSettingsAdminPage /> },
+              { path: '/admin/portfolio', element: <PortfolioDashboardPage /> },
+              { path: '/admin/portfolio/investments', element: <PortfolioInvestmentsPage /> },
+              { path: '/admin/portfolio/investments/:id', element: <PortfolioPropertyDetailPage /> },
+              { path: '/admin/portfolio/investments/:id/photos', element: <PortfolioPhotosPage /> },
+              { path: '/admin/portfolio/investments/:id/documents', element: <PortfolioDocumentsPage /> },
+              { path: '/admin/portfolio/updates', element: <PortfolioUpdatesPage /> },
             ],
           },
         ],
