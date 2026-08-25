@@ -1,0 +1,17 @@
+:root {
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #fafafa;
+  --border: #e9e9e9;
+  --orange: #f4a230;
+  --orange-soft: #fdf1de;
+  --active-bg: #fdf7ea;
+  --text: #1a1a1a;
+  --text-dim: #6b6b68;
+  --text-faint: #a19d97;
+
+  --danger: #c0392b;
+  --danger-soft: #fde8e8;
+  --success: #1e7e40;
+  --success-soft: #e6f5ea;
+}
