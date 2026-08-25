@@ -7,26 +7,25 @@ import { supabase } from '../../lib/supabaseClient'
 
 interface NavItem {
   to: string
-  icon: string
   label: string
 }
 
 const investorNav: NavItem[] = [
-  { to: '/dashboard', icon: '▤', label: 'Dashboard' },
-  { to: '/investments', icon: '🏢', label: 'Investments' },
-  { to: '/updates', icon: '💬', label: 'Investor Updates' },
+  { to: '/dashboard', label: 'Dashboard' },
+  { to: '/investments', label: 'Investments' },
+  { to: '/updates', label: 'Investor Updates' },
 ]
 const investorSecondaryNav: NavItem[] = [
-  { to: '/profile', icon: '👤', label: 'My Profile' },
-  { to: '/contact', icon: '✉', label: 'Contact' },
+  { to: '/profile', label: 'My Profile' },
+  { to: '/contact', label: 'Contact' },
 ]
 
 const adminNav: NavItem[] = [
-  { to: '/admin/properties', icon: '🏢', label: 'Properties' },
-  { to: '/admin/investors', icon: '👥', label: 'Investors' },
-  { to: '/admin/document-categories', icon: '🏷', label: 'Document Categories' },
+  { to: '/admin/properties', label: 'Properties' },
+  { to: '/admin/investors', label: 'Investors' },
+  { to: '/admin/document-categories', label: 'Document Categories' },
 ]
-const adminSecondaryNav: NavItem[] = [{ to: '/admin/settings', icon: '⚙', label: 'Site Settings' }]
+const adminSecondaryNav: NavItem[] = [{ to: '/admin/settings', label: 'Site Settings' }]
 
 export default function AppShell() {
   const { investorUser } = useAuth()
@@ -63,7 +62,6 @@ export default function AppShell() {
               to={item.to}
               className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}
             >
-              <span className="ic">{item.icon}</span>
               <span>{item.label}</span>
             </NavLink>
           ))}
@@ -76,12 +74,10 @@ export default function AppShell() {
               to={item.to}
               className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}
             >
-              <span className="ic">{item.icon}</span>
               <span>{item.label}</span>
             </NavLink>
           ))}
           <button className="nav-item" onClick={handleLogout}>
-            <span className="ic">↪</span>
             <span>Log Out</span>
           </button>
         </div>
