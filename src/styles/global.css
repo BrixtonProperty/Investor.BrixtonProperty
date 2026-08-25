@@ -25,7 +25,7 @@ input, select, textarea{ font-family:inherit; }
   display:flex; flex-direction:column;
   position:sticky; top:0; height:100vh; overflow-y:auto;
 }
-.brand-logo{ width:100%; height:auto; margin-bottom:20px; object-fit:contain; display:block; }
+.brand-logo{ max-height:64px; width:auto; height:auto; margin-bottom:20px; margin-right:auto; object-fit:contain; display:block; align-self:flex-start; }
 .portal-label{
   font-size:12px; letter-spacing:2px; color:var(--orange);
   border-left:2px solid var(--orange); padding-left:10px; margin-bottom:18px;
