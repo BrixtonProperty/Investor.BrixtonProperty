@@ -15,7 +15,7 @@ export default function MfaChallengePage() {
     setSubmitting(true)
     setError(null)
     const factors = await supabase.auth.mfa.listFactors()
-    const factorId = factors.data?.totp[0]?.id
+    const factorId = factors.data?.totp[0]?.id // .totp only ever contains verified factors
     if (!factorId) {
       setSubmitting(false)
       setError('No authenticator found on this account.')

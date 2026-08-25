@@ -5,7 +5,7 @@ import { useAuth } from '../../app/AuthProvider'
 
 /** Forced for every admin account before they can reach any /admin/* route (mandatory MFA). */
 export default function MfaEnrollPage() {
-  const { refreshAal, hasMfaFactor } = useAuth()
+  const { refreshAal } = useAuth()
   const navigate = useNavigate()
   const [qrCode, setQrCode] = useState<string | null>(null)
   const [factorId, setFactorId] = useState<string | null>(null)
@@ -14,19 +14,48 @@ export default function MfaEnrollPage() {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    if (hasMfaFactor) {
-      navigate('/mfa-challenge', { replace: true })
-      return
-    }
-    supabase.auth.mfa.enroll({ factorType: 'totp' }).then(({ data, error }) => {
+    let cancelled = false
+
+    async function start() {
+      // Don't trust AuthProvider's cached hasMfaFactor here — it can be
+      // stale/racy right after a fresh login. Check directly, and clean up
+      // any half-finished enrollment (e.g. from a reload mid-scan) before
+      // creating a new one, since Supabase rejects a second factor with the
+      // same (blank) friendly name while an unverified one still exists.
+      const { data: factorsData, error: listError } = await supabase.auth.mfa.listFactors()
+      if (cancelled) return
+      if (listError) {
+        setError(listError.message)
+        return
+      }
+      // .totp is typed to only ever contain verified factors — unverified
+      // ones (e.g. a half-finished enrollment from a previous page load)
+      // only show up in .all, so that's what we need to clean up here.
+      if (factorsData.totp.length > 0) {
+        navigate('/mfa-challenge', { replace: true })
+        return
+      }
+      const staleTotp = factorsData.all.filter((f) => f.factor_type === 'totp' && f.status === 'unverified')
+      for (const stale of staleTotp) {
+        await supabase.auth.mfa.unenroll({ factorId: stale.id })
+      }
+      if (cancelled) return
+
+      const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' })
+      if (cancelled) return
       if (error) {
         setError(error.message)
         return
       }
       setQrCode(data.totp.qr_code)
       setFactorId(data.id)
-    })
-  }, [hasMfaFactor, navigate])
+    }
+
+    start()
+    return () => {
+      cancelled = true
+    }
+  }, [navigate])
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault()

@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
     setAal((data?.currentLevel as 'aal1' | 'aal2') ?? 'aal1')
     const factors = await supabase.auth.mfa.listFactors()
-    setHasMfaFactor((factors.data?.totp.length ?? 0) > 0)
+    setHasMfaFactor((factors.data?.totp.length ?? 0) > 0) // .totp only ever contains verified factors
   }
 
   useEffect(() => {
