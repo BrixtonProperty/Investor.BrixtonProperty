@@ -408,7 +408,12 @@ create policy photos_bucket_admin_insert on storage.objects for insert with chec
 create policy photos_bucket_admin_update on storage.objects for update using (bucket_id = 'property-photos' and is_admin_verified());
 create policy photos_bucket_admin_delete on storage.objects for delete using (bucket_id = 'property-photos' and is_admin_verified());
 
--- site-assets bucket is public (reads bypass RLS); writes still admin-only.
+-- site-assets bucket is public for anonymous/unauthenticated fetches (the
+-- login page needs branding pre-session), but authenticated calls -- like
+-- the upload/upsert used when replacing branding images -- still go through
+-- RLS and need their own SELECT policy regardless of the bucket's public flag.
+drop policy if exists site_assets_bucket_select on storage.objects;
+create policy site_assets_bucket_select on storage.objects for select using (bucket_id = 'site-assets');
 drop policy if exists site_assets_bucket_admin_insert on storage.objects;
 create policy site_assets_bucket_admin_insert on storage.objects for insert with check (bucket_id = 'site-assets' and is_admin_verified());
 create policy site_assets_bucket_admin_update on storage.objects for update using (bucket_id = 'site-assets' and is_admin_verified());
