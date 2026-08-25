@@ -145,7 +145,7 @@ h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; mar
 
 /* ---------- Detail ---------- */
 .back-link{ font-size:13px; color:var(--text-dim); margin-bottom:18px; cursor:pointer; display:inline-block; background:none; border:none; padding:0; }
-.detail-hero{ height:280px; border-radius:12px; background:#ddd center/cover; margin-bottom:22px; position:relative; }
+.detail-hero{ height:460px; border-radius:12px; background:#ddd center/cover; margin-bottom:22px; position:relative; }
 .detail-name{ font-size:30px; margin:0 0 4px; }
 .detail-loc{ font-size:13px; color:var(--text-dim); display:flex; align-items:center; gap:6px; margin-bottom:10px; }
 .detail-loc .pin{ color:var(--orange); }
@@ -244,8 +244,8 @@ h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; mar
 .gallery-toolbar{ display:flex; justify-content:flex-end; gap:10px; margin-bottom:8px; }
 .month-label{ font-size:14px; font-weight:600; margin:24px 0 12px; }
 .month-label:first-of-type{ margin-top:0; }
-.photo-grid-page{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-.photo-tile{ position:relative; border-radius:8px; overflow:hidden; cursor:pointer; height:200px; background:#eee center/cover; }
+.photo-grid-page{ display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
+.photo-tile{ position:relative; border-radius:8px; overflow:hidden; cursor:pointer; height:340px; background:#eee center/cover; }
 .photo-tile .new-badge{ position:absolute; top:10px; left:10px; background:var(--orange); color:#fff; font-size:10px; font-weight:700; letter-spacing:.5px; padding:3px 8px; border-radius:4px; }
 .photo-tile .cap{ position:absolute; bottom:0; left:0; right:0; padding:8px 10px; font-size:11px; color:#fff; background:linear-gradient(0deg, rgba(0,0,0,.55), rgba(0,0,0,0)); opacity:0; transition:opacity .15s; }
 .photo-tile:hover .cap{ opacity:1; }
@@ -351,7 +351,9 @@ h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; mar
   .login-foot{ left:24px; right:24px; position:static; margin-top:30px; flex-direction:column; gap:8px; }
   .profile-row{ grid-template-columns:1fr; }
   .addr-grid{ grid-template-columns:1fr; }
-  .photo-grid-page{ grid-template-columns:repeat(2,1fr); }
+  .photo-grid-page{ grid-template-columns:1fr; }
+  .photo-tile{ height:240px; }
+  .detail-hero{ height:260px; }
   .doc-table-head, .admin-table-head{ display:none; }
   .doc-table-row, .admin-table-row{ grid-template-columns:1fr; gap:6px; }
   .lightbox-main{ padding:0 12px; }
