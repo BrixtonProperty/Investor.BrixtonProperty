@@ -95,3 +95,17 @@ export function useDeactivateInvestorUser() {
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   })
 }
+
+/** Permanently deletes a login (the auth user + its investor_users row via
+ * cascade) -- not the same as deactivating. Use when a login should be
+ * fully removed, e.g. before re-inviting the same email address. */
+export function useDeleteInvestorUser() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (investorUserId: string) => callFunction<{ ok: true }>('delete-investor-user', { investorUserId }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [KEY] })
+      qc.invalidateQueries({ queryKey: ['investor_accounts'] })
+    },
+  })
+}

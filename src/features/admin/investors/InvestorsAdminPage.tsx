@@ -1,17 +1,20 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useInvestorAccounts, useCreateInvestorAccount } from '../../../queries/investorAccounts'
-import { useAllInvestorUsers, useCreateInvestorUser } from '../../../queries/investorUsers'
+import { useAllInvestorUsers, useCreateInvestorUser, useDeleteInvestorUser } from '../../../queries/investorUsers'
+import { useAuth } from '../../../app/AuthProvider'
 import { useToast } from '../../../components/Toast'
 import Modal from '../../../components/Modal'
 import Icon from '../../../components/Icon'
 
 export default function InvestorsAdminPage() {
   const navigate = useNavigate()
+  const { investorUser: currentUser } = useAuth()
   const accounts = useInvestorAccounts()
   const users = useAllInvestorUsers()
   const createAccount = useCreateInvestorAccount()
   const createAdmin = useCreateInvestorUser()
+  const deleteLogin = useDeleteInvestorUser()
   const toast = useToast()
 
   const [search, setSearch] = useState('')
@@ -59,6 +62,16 @@ export default function InvestorsAdminPage() {
       toast.show('Admin created.')
     } catch (err) {
       toast.show(err instanceof Error ? err.message : 'Could not create admin.', 'error')
+    }
+  }
+
+  async function handleDeleteAdmin(name: string, id: string) {
+    if (!confirm(`Permanently delete ${name}'s admin login? This can't be undone.`)) return
+    try {
+      await deleteLogin.mutateAsync(id)
+      toast.show('Admin login deleted.')
+    } catch (err) {
+      toast.show(err instanceof Error ? err.message : 'Could not delete admin.', 'error')
     }
   }
 
@@ -120,7 +133,7 @@ export default function InvestorsAdminPage() {
       <div className="card">
         {admins.length === 0 && <div className="empty-state">No admins yet.</div>}
         {admins.map((u) => (
-          <div className="admin-table-row" style={{ gridTemplateColumns: '2fr 1fr 1fr', cursor: 'default' }} key={u.id}>
+          <div className="admin-table-row" style={{ gridTemplateColumns: '2fr 1fr 1fr auto', cursor: 'default' }} key={u.id}>
             <div>
               <div style={{ fontWeight: 600 }}>{u.name}</div>
               <div style={{ fontSize: 12, color: 'var(--text-faint)' }}>{u.email}</div>
@@ -129,6 +142,11 @@ export default function InvestorsAdminPage() {
             <span className={'status-pill ' + (u.invite_status === 'accepted' ? 'active' : 'pending')}>
               {u.invite_status === 'accepted' ? 'Signed up' : 'Invite pending'}
             </span>
+            {u.id !== currentUser?.id && (
+              <button className="btn-icon" type="button" onClick={() => handleDeleteAdmin(u.name, u.id)} aria-label="Delete admin login">
+                <Icon name="close" size={13} />
+              </button>
+            )}
           </div>
         ))}
       </div>

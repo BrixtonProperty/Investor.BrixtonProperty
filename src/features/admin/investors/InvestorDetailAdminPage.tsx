@@ -14,6 +14,7 @@ import {
   useCreateInvestorUser,
   useRegenerateInvite,
   useDeactivateInvestorUser,
+  useDeleteInvestorUser,
 } from '../../../queries/investorUsers'
 import { useProperties } from '../../../queries/properties'
 import { fmtCurrency, fmtPct } from '../../../lib/format'
@@ -42,6 +43,7 @@ export default function InvestorDetailAdminPage() {
   const createInvestor = useCreateInvestorUser()
   const regenerateInvite = useRegenerateInvite()
   const deactivate = useDeactivateInvestorUser()
+  const deleteLogin = useDeleteInvestorUser()
   const toast = useToast()
 
   const [displayName, setDisplayName] = useState('')
@@ -54,6 +56,7 @@ export default function InvestorDetailAdminPage() {
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [loginForm, setLoginForm] = useState({ name: '', email: '' })
   const [inviteLink, setInviteLink] = useState<string | null>(null)
+  const [regeneratedLink, setRegeneratedLink] = useState<string | null>(null)
 
   if (account.isLoading) return <div className="loading-state">Loading investor…</div>
   if (!account.data || !id) return <div className="error-state">Investor not found.</div>
@@ -132,9 +135,24 @@ export default function InvestorDetailAdminPage() {
   async function handleRegenerate(user: InvestorUser) {
     try {
       const result = await regenerateInvite.mutateAsync(user.id)
-      alert(`New invite link:\n${result.inviteLink}`)
+      setRegeneratedLink(result.inviteLink)
     } catch (err) {
       toast.show(err instanceof Error ? err.message : 'Could not regenerate invite.', 'error')
+    }
+  }
+
+  async function handleDeleteLogin(user: InvestorUser) {
+    if (
+      !confirm(
+        `Permanently delete ${user.name}'s login (${user.email})? This can't be undone — they'll need a brand new invite to get back in.`,
+      )
+    )
+      return
+    try {
+      await deleteLogin.mutateAsync(user.id)
+      toast.show('Login deleted.')
+    } catch (err) {
+      toast.show(err instanceof Error ? err.message : 'Could not delete login.', 'error')
     }
   }
 
@@ -234,12 +252,37 @@ export default function InvestorDetailAdminPage() {
                   <button className="btn-text" type="button" onClick={() => handleToggleActive(u)}>
                     {u.is_active ? 'Deactivate' : 'Reactivate'}
                   </button>
+                  <button className="btn-icon" type="button" onClick={() => handleDeleteLogin(u)} aria-label="Delete login">
+                    <Icon name="close" size={13} />
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {regeneratedLink && (
+        <Modal
+          title="New Invite Link"
+          onClose={() => setRegeneratedLink(null)}
+          footer={
+            <button className="btn-solid" type="button" onClick={() => setRegeneratedLink(null)}>
+              Done
+            </button>
+          }
+        >
+          <p style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 0 }}>
+            Copy this link and send it to them yourself — the old link no longer works.
+          </p>
+          <div className="invite-box">
+            <input readOnly value={regeneratedLink} onFocus={(e) => e.target.select()} />
+            <button className="btn-text" type="button" onClick={() => navigator.clipboard.writeText(regeneratedLink)}>
+              Copy
+            </button>
+          </div>
+        </Modal>
+      )}
 
       {assignOpen && (
         <Modal
