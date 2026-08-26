@@ -37,30 +37,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true
+    let resolvedOnce = false
 
-    supabase.auth.getSession().then(async ({ data }) => {
+    async function applySession(newSession: Session | null) {
       if (!mounted) return
-      setSession(data.session)
-      if (data.session) {
-        await Promise.all([loadInvestorUser(data.session.user.id), loadAal()])
-      }
-      setLoading(false)
-    })
-
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       setSession(newSession)
       if (newSession) {
-        await Promise.all([loadInvestorUser(newSession.user.id), loadAal()])
+        try {
+          await Promise.all([loadInvestorUser(newSession.user.id), loadAal()])
+        } catch {
+          // don't let a transient profile/MFA lookup failure block auth resolution
+        }
       } else {
         setInvestorUser(null)
         setAal(null)
         setHasMfaFactor(false)
       }
+      if (!mounted) return
+      resolvedOnce = true
+      setLoading(false)
+    }
+
+    // Primary path: on mount, whatever session (if any) is already
+    // established -- including one just detected from an invite/magic-link
+    // URL fragment.
+    supabase.auth.getSession().then(({ data }) => applySession(data.session))
+
+    // Also resolves loading from here: getSession()'s own promise has a
+    // known race against the URL-based session-detection that runs on
+    // client init (e.g. an /accept-invite or /admin/portfolio landing from
+    // a fresh invite link), where getSession() can be left pending. This
+    // listener fires independently, so `loading` still clears even if that
+    // happens -- otherwise the page is stuck on "Loading..." forever and a
+    // refresh drops the still-unconsumed hash, landing back on /login.
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      applySession(newSession)
     })
+
+    // Last-resort safety net: never leave the app stuck on a loading
+    // screen indefinitely, regardless of the cause.
+    const timeout = setTimeout(() => {
+      if (mounted && !resolvedOnce) setLoading(false)
+    }, 4000)
 
     return () => {
       mounted = false
       sub.subscription.unsubscribe()
+      clearTimeout(timeout)
     }
   }, [])
 
