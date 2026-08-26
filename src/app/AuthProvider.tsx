@@ -38,54 +38,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true
     let resolvedOnce = false
-    console.log('[auth] effect start, mounted=', mounted)
 
-    async function applySession(newSession: Session | null, source: string) {
-      console.log('[auth] applySession from', source, 'session?', !!newSession, 'mounted?', mounted)
+    async function applySession(newSession: Session | null) {
       if (!mounted) return
       setSession(newSession)
       if (newSession) {
         try {
           await Promise.all([loadInvestorUser(newSession.user.id), loadAal()])
-          console.log('[auth] loadInvestorUser/loadAal completed for', source)
-        } catch (err) {
-          console.log('[auth] loadInvestorUser/loadAal threw for', source, err)
+        } catch {
+          // don't let a transient profile/MFA lookup failure block auth resolution
         }
       } else {
         setInvestorUser(null)
         setAal(null)
         setHasMfaFactor(false)
       }
-      if (!mounted) {
-        console.log('[auth] unmounted before setLoading(false), source=', source)
-        return
-      }
+      if (!mounted) return
       resolvedOnce = true
-      console.log('[auth] setLoading(false) from', source)
       setLoading(false)
     }
 
-    console.log('[auth] calling getSession()')
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        console.log('[auth] getSession() resolved, session?', !!data.session)
-        applySession(data.session, 'getSession')
-      })
-      .catch((err) => console.log('[auth] getSession() rejected', err))
+    // Primary path: on mount, whatever session (if any) is already
+    // established -- including one just detected from an invite/magic-link
+    // URL fragment.
+    supabase.auth.getSession().then(({ data }) => applySession(data.session))
 
-    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
-      console.log('[auth] onAuthStateChange fired, event=', event, 'session?', !!newSession)
-      applySession(newSession, 'onAuthStateChange:' + event)
+    // Also resolves loading from here: getSession()'s own promise has a
+    // known race against the URL-based session-detection that runs on
+    // client init (e.g. an /accept-invite or /admin/portfolio landing from
+    // a fresh invite link), where getSession() can be left pending. This
+    // listener fires independently, so `loading` still clears even if that
+    // happens -- otherwise the page is stuck on "Loading..." forever and a
+    // refresh drops the still-unconsumed hash, landing back on /login.
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      applySession(newSession)
     })
 
+    // Last-resort safety net: never leave the app stuck on a loading
+    // screen indefinitely, regardless of the cause.
     const timeout = setTimeout(() => {
-      console.log('[auth] timeout fired, mounted=', mounted, 'resolvedOnce=', resolvedOnce)
       if (mounted && !resolvedOnce) setLoading(false)
     }, 4000)
 
     return () => {
-      console.log('[auth] cleanup running, was mounted=', mounted)
       mounted = false
       sub.subscription.unsubscribe()
       clearTimeout(timeout)
