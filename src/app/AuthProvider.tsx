@@ -94,7 +94,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     aal,
     hasMfaFactor,
     refreshInvestorUser: async () => {
-      if (session) await loadInvestorUser(session.user.id)
+      // Reads the session live rather than closing over the `session` state
+      // variable -- a caller that just established a session moments ago
+      // (e.g. AcceptInvitePage right after verifyOtp()) would otherwise be
+      // holding a stale closure from a pre-session render, where this was a
+      // silent no-op because `session` was still null when it was captured.
+      const { data } = await supabase.auth.getSession()
+      if (data.session) await loadInvestorUser(data.session.user.id)
     },
     refreshAal: loadAal,
   }

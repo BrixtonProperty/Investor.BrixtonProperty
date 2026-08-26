@@ -32,13 +32,18 @@ export default async (req: Request): Promise<Response> => {
     })
     if (linkError || !linkData) throw new HttpError(500, linkError?.message ?? 'Could not generate invite link.')
 
+    // See create-investor-user.ts for why this is our own URL + token_hash
+    // rather than Supabase's action_link -- avoids the token being silently
+    // burned by email link-preview scanners before the real click.
+    const inviteLink = `${appUrl}/accept-invite?token_hash=${linkData.properties.hashed_token}&type=magiclink`
+
     const { error: updateError } = await supabase
       .from('investor_users')
-      .update({ invite_link: linkData.properties.action_link, invite_generated_at: new Date().toISOString() })
+      .update({ invite_link: inviteLink, invite_generated_at: new Date().toISOString() })
       .eq('id', body.investorUserId)
     if (updateError) throw new HttpError(500, updateError.message)
 
-    return json({ inviteLink: linkData.properties.action_link })
+    return json({ inviteLink })
   } catch (err) {
     return handleError(err)
   }

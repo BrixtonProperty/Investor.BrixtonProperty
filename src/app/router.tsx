@@ -35,10 +35,13 @@ import PortfolioUpdatesPage from '../features/admin/portfolio/PortfolioUpdatesPa
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
+  // Not behind RequireAuth: this page establishes its own session (via
+  // verifyOtp on submit) rather than requiring one to already exist -- see
+  // AcceptInvitePage for why.
+  { path: '/accept-invite', element: <AcceptInvitePage /> },
   {
     element: <RequireAuth />,
     children: [
-      { path: '/accept-invite', element: <AcceptInvitePage /> },
       { path: '/mfa-enroll', element: <MfaEnrollPage /> },
       { path: '/mfa-challenge', element: <MfaChallengePage /> },
       { path: '/', element: <RootRedirect /> },
