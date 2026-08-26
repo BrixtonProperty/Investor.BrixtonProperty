@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { useSiteSettings } from '../../queries/siteSettings'
 import { publicAssetUrl } from '../../lib/signedUrl'
 import { useAuth } from '../../app/AuthProvider'
+import Icon from '../../components/Icon'
 
 export default function LoginPage() {
   const { data: settings } = useSiteSettings()
@@ -42,7 +43,9 @@ export default function LoginPage() {
     <div className="login-screen">
       <div className="login-photo" style={bgUrl ? { backgroundImage: `url('${bgUrl}')` } : undefined} />
       <div className="login-panel">
-        <div className="login-lang">🌐 English ▾</div>
+        <div className="login-lang">
+          <Icon name="globe" size={14} /> English ▾
+        </div>
         <div className="login-logo">
           {logoUrl ? (
             <img src={logoUrl} alt={settings?.company_name ?? 'Brixton Property'} />
@@ -93,7 +96,7 @@ export default function LoginPage() {
               onClick={() => setShowPassword((v) => !v)}
               aria-label="Toggle password visibility"
             >
-              👁
+              <Icon name="eye" size={16} />
             </button>
           </div>
           <div className="login-row">

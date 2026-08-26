@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { fmtBytes, fmtDate } from '../lib/format'
 import DocTypePill from './DocTypePill'
 import Pagination from './Pagination'
+import Icon from './Icon'
 import type { DocumentCategory, DocumentRow } from '../types/database.types'
 
 const PAGE_SIZE = 8
@@ -52,7 +53,7 @@ export default function DocTable({
     <>
       <div className="doc-toolbar">
         <div className="doc-search">
-          🔍
+          <Icon name="search" size={15} />
           <input
             type="text"
             placeholder="Search documents..."
@@ -112,10 +113,10 @@ export default function DocTable({
             {editable ? (
               <div style={{ display: 'flex', gap: 4 }} onClick={(e) => e.stopPropagation()}>
                 <button className="btn-icon" onClick={() => onEdit?.(d)} type="button" aria-label="Edit">
-                  ✎
+                  <Icon name="edit" size={14} />
                 </button>
                 <button className="btn-icon" onClick={() => onDelete?.(d)} type="button" aria-label="Delete">
-                  ✕
+                  <Icon name="close" size={14} />
                 </button>
               </div>
             ) : (

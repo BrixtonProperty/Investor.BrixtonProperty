@@ -1,4 +1,5 @@
 import { useSiteSettings } from '../../queries/siteSettings'
+import Icon from '../../components/Icon'
 
 export default function ContactPage() {
   const { data: settings } = useSiteSettings()
@@ -11,7 +12,7 @@ export default function ContactPage() {
       <div className="card assist" style={{ alignItems: 'center' }}>
         <div className="assist-l">
           <div className="ic-circle" style={{ width: 44, height: 44, fontSize: 18 }}>
-            🎧
+            <Icon name="headset" size={20} />
           </div>
           <div>
             <h4>Investor Relations</h4>

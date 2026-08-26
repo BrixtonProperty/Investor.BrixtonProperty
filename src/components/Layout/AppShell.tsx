@@ -4,35 +4,40 @@ import { useAuth } from '../../app/AuthProvider'
 import { useSiteSettings } from '../../queries/siteSettings'
 import { publicAssetUrl } from '../../lib/signedUrl'
 import { supabase } from '../../lib/supabaseClient'
+import Icon from '../Icon'
 
 interface NavItem {
   to: string
   label: string
+  /** Match only the exact path -- for pages with no nested child routes, so
+   * a shorter sibling path (e.g. /admin/portfolio) doesn't stay highlighted
+   * just because it's a string-prefix of /admin/portfolio/investments etc. */
+  end?: boolean
 }
 
 const investorNav: NavItem[] = [
-  { to: '/dashboard', label: 'Dashboard' },
+  { to: '/dashboard', label: 'Dashboard', end: true },
   { to: '/investments', label: 'Investments' },
-  { to: '/updates', label: 'Investor Updates' },
+  { to: '/updates', label: 'Investor Updates', end: true },
 ]
 const investorSecondaryNav: NavItem[] = [
-  { to: '/profile', label: 'My Profile' },
-  { to: '/contact', label: 'Contact' },
+  { to: '/profile', label: 'My Profile', end: true },
+  { to: '/contact', label: 'Contact', end: true },
 ]
 
 const adminNav: NavItem[] = [
   { to: '/admin/properties', label: 'Properties' },
   { to: '/admin/investors', label: 'Investors' },
-  { to: '/admin/document-categories', label: 'Document Categories' },
+  { to: '/admin/document-categories', label: 'Document Categories', end: true },
 ]
-const adminSecondaryNav: NavItem[] = [{ to: '/admin/settings', label: 'Site Settings' }]
+const adminSecondaryNav: NavItem[] = [{ to: '/admin/settings', label: 'Site Settings', end: true }]
 
 // Admin's read-only preview of the investor experience -- unscoped across
 // every property, since an admin has no personal holdings of their own.
 const portfolioNav: NavItem[] = [
-  { to: '/admin/portfolio', label: 'Dashboard' },
+  { to: '/admin/portfolio', label: 'Dashboard', end: true },
   { to: '/admin/portfolio/investments', label: 'Investments' },
-  { to: '/admin/portfolio/updates', label: 'Investor Updates' },
+  { to: '/admin/portfolio/updates', label: 'Investor Updates', end: true },
 ]
 
 export default function AppShell() {
@@ -70,6 +75,7 @@ export default function AppShell() {
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.end}
               className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}
             >
               <span>{item.label}</span>
@@ -82,6 +88,7 @@ export default function AppShell() {
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.end}
               className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}
             >
               <span>{item.label}</span>
@@ -120,7 +127,9 @@ export default function AppShell() {
             ) : null}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            <div className="bell">🔔</div>
+            <div className="bell">
+              <Icon name="bell" />
+            </div>
             <div className="user" onClick={() => setMenuOpen((v) => !v)}>
               Welcome, <b>{investorUser?.name ?? ''}</b> ▾
               {menuOpen && (

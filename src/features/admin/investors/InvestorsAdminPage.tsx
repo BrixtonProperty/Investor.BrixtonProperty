@@ -1,27 +1,25 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useInvestorAccounts } from '../../../queries/investorAccounts'
+import { useInvestorAccounts, useCreateInvestorAccount } from '../../../queries/investorAccounts'
 import { useAllInvestorUsers, useCreateInvestorUser } from '../../../queries/investorUsers'
 import { useToast } from '../../../components/Toast'
 import Modal from '../../../components/Modal'
+import Icon from '../../../components/Icon'
 
 export default function InvestorsAdminPage() {
   const navigate = useNavigate()
   const accounts = useInvestorAccounts()
   const users = useAllInvestorUsers()
-  const createInvestor = useCreateInvestorUser()
+  const createAccount = useCreateInvestorAccount()
+  const createAdmin = useCreateInvestorUser()
   const toast = useToast()
 
   const [search, setSearch] = useState('')
   const [addOpen, setAddOpen] = useState(false)
+  const [role, setRole] = useState<'investor' | 'admin'>('investor')
+  const [investorName, setInvestorName] = useState('')
+  const [adminForm, setAdminForm] = useState({ name: '', email: '' })
   const [inviteLink, setInviteLink] = useState<string | null>(null)
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    role: 'investor' as 'admin' | 'investor',
-    newAccountDisplayName: '',
-    existingAccountId: '',
-  })
 
   const admins = (users.data ?? []).filter((u) => u.role === 'admin')
 
@@ -35,27 +33,41 @@ export default function InvestorsAdminPage() {
 
   const filtered = (accounts.data ?? []).filter((a) => a.display_name.toLowerCase().includes(search.toLowerCase()))
 
-  async function handleCreate(e: React.FormEvent) {
+  // Step 1 of 2: just the investor record itself (name + entity) -- no email,
+  // no login. Property assignment, ownership %, and Initial Investment are
+  // set from the investor's own detail page (Holdings tab) right after.
+  // Step 2 ("set up account" / send an invite) happens later, whenever the
+  // admin is ready, from that same investor's Logins tab.
+  async function handleCreateInvestor(e: React.FormEvent) {
     e.preventDefault()
     try {
-      const result = await createInvestor.mutateAsync({
-        name: form.name,
-        email: form.email,
-        role: form.role,
-        investorAccountId: form.role === 'investor' ? form.existingAccountId || undefined : undefined,
-        newAccountDisplayName: form.role === 'investor' && !form.existingAccountId ? form.newAccountDisplayName : undefined,
-      })
-      setInviteLink(result.inviteLink)
-      toast.show(form.role === 'admin' ? 'Admin created.' : 'Investor created.')
+      const account = await createAccount.mutateAsync(investorName)
+      setAddOpen(false)
+      setInvestorName('')
+      toast.show(`${account.display_name} added — assign their holdings next.`)
+      navigate(`/admin/investors/${account.id}`)
     } catch (err) {
-      toast.show(err instanceof Error ? err.message : 'Could not create login.', 'error')
+      toast.show(err instanceof Error ? err.message : 'Could not add investor.', 'error')
+    }
+  }
+
+  async function handleCreateAdmin(e: React.FormEvent) {
+    e.preventDefault()
+    try {
+      const result = await createAdmin.mutateAsync({ name: adminForm.name, email: adminForm.email, role: 'admin' })
+      setInviteLink(result.inviteLink)
+      toast.show('Admin created.')
+    } catch (err) {
+      toast.show(err instanceof Error ? err.message : 'Could not create admin.', 'error')
     }
   }
 
   function closeAdd() {
     setAddOpen(false)
+    setRole('investor')
+    setInvestorName('')
+    setAdminForm({ name: '', email: '' })
     setInviteLink(null)
-    setForm({ name: '', email: '', role: 'investor', newAccountDisplayName: '', existingAccountId: '' })
   }
 
   if (accounts.isLoading) return <div className="loading-state">Loading investors…</div>
@@ -74,7 +86,7 @@ export default function InvestorsAdminPage() {
 
       <div className="admin-list-toolbar">
         <div className="admin-search">
-          🔍
+          <Icon name="search" size={15} />
           <input type="text" placeholder="Search investors..." value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
       </div>
@@ -122,99 +134,106 @@ export default function InvestorsAdminPage() {
       </div>
 
       {addOpen && (
-        <Modal title={form.role === 'admin' ? 'Add Admin' : 'Add Investor'} onClose={closeAdd} footer={
-          inviteLink ? (
-            <button className="btn-solid" type="button" onClick={closeAdd}>
-              Done
-            </button>
-          ) : (
-            <>
-              <button className="btn-outline" type="button" onClick={closeAdd}>
-                Cancel
+        <Modal
+          title={role === 'admin' ? 'Add Admin' : 'Add Investor'}
+          onClose={closeAdd}
+          footer={
+            inviteLink ? (
+              <button className="btn-solid" type="button" onClick={closeAdd}>
+                Done
               </button>
-              <button className="btn-solid" type="submit" form="add-investor-form" disabled={createInvestor.isPending}>
-                {createInvestor.isPending ? 'Creating…' : form.role === 'admin' ? 'Create Admin' : 'Create Investor'}
-              </button>
-            </>
-          )
-        }>
+            ) : (
+              <>
+                <button className="btn-outline" type="button" onClick={closeAdd}>
+                  Cancel
+                </button>
+                <button
+                  className="btn-solid"
+                  type="submit"
+                  form={role === 'admin' ? 'add-admin-form' : 'add-investor-form'}
+                  disabled={role === 'admin' ? createAdmin.isPending : createAccount.isPending}
+                >
+                  {role === 'admin'
+                    ? createAdmin.isPending
+                      ? 'Creating…'
+                      : 'Create Admin'
+                    : createAccount.isPending
+                      ? 'Adding…'
+                      : 'Add Investor'}
+                </button>
+              </>
+            )
+          }
+        >
           {inviteLink ? (
             <>
               <p style={{ fontSize: 13, color: 'var(--text-dim)' }}>
-                Account created. Copy this invite link and send it to the investor yourself (e.g. via email) — it is
-                not sent automatically.
+                Account created. Copy this invite link and send it to them yourself (e.g. via email) — it is not
+                sent automatically.
               </p>
               <div className="invite-box">
                 <input readOnly value={inviteLink} onFocus={(e) => e.target.select()} />
-                <button
-                  className="btn-text"
-                  type="button"
-                  onClick={() => navigator.clipboard.writeText(inviteLink)}
-                >
+                <button className="btn-text" type="button" onClick={() => navigator.clipboard.writeText(inviteLink)}>
                   Copy
                 </button>
               </div>
             </>
           ) : (
-            <form id="add-investor-form" onSubmit={handleCreate}>
-              <label className="field-label">Type of login</label>
+            <>
+              <label className="field-label">Type</label>
               <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
                 <button
                   type="button"
-                  className={form.role === 'investor' ? 'btn-solid' : 'btn-outline'}
-                  onClick={() => setForm({ ...form, role: 'investor' })}
+                  className={role === 'investor' ? 'btn-solid' : 'btn-outline'}
+                  onClick={() => setRole('investor')}
                 >
                   Investor
                 </button>
-                <button
-                  type="button"
-                  className={form.role === 'admin' ? 'btn-solid' : 'btn-outline'}
-                  onClick={() => setForm({ ...form, role: 'admin' })}
-                >
+                <button type="button" className={role === 'admin' ? 'btn-solid' : 'btn-outline'} onClick={() => setRole('admin')}>
                   Admin (Brixton staff)
                 </button>
               </div>
 
-              <label className="field-label">{form.role === 'admin' ? 'Admin name' : 'Investor name'}</label>
-              <input className="form-input" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              <label className="field-label">Email</label>
-              <input className="form-input" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-
-              {form.role === 'admin' ? (
-                <p className="form-note">
-                  Admin accounts don't own any investor entity or holdings — they'll be forced through MFA
-                  enrollment before reaching the admin panel.
-                </p>
+              {role === 'investor' ? (
+                <form id="add-investor-form" onSubmit={handleCreateInvestor}>
+                  <label className="field-label">Investor / entity name</label>
+                  <input
+                    className="form-input"
+                    required
+                    placeholder="e.g. Smith Family Trust"
+                    value={investorName}
+                    onChange={(e) => setInvestorName(e.target.value)}
+                  />
+                  <p className="form-note">
+                    This just creates the record so you can assign their property holdings, ownership %, and
+                    Initial Investment. No email or login needed yet — you'll set up their account (and generate
+                    an invite link) separately, whenever you're ready, from their Logins tab.
+                  </p>
+                </form>
               ) : (
-                <>
-                  <label className="field-label">Investor entity</label>
-                  <select
-                    className="form-select"
-                    value={form.existingAccountId}
-                    onChange={(e) => setForm({ ...form, existingAccountId: e.target.value })}
-                  >
-                    <option value="">+ Create a new entity…</option>
-                    {(accounts.data ?? []).map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.display_name} (add as an additional login)
-                      </option>
-                    ))}
-                  </select>
-                  {!form.existingAccountId && (
-                    <>
-                      <label className="field-label">New entity name</label>
-                      <input
-                        className="form-input"
-                        required
-                        placeholder="e.g. Smith Family Trust"
-                        value={form.newAccountDisplayName}
-                        onChange={(e) => setForm({ ...form, newAccountDisplayName: e.target.value })}
-                      />
-                    </>
-                  )}
-                </>
+                <form id="add-admin-form" onSubmit={handleCreateAdmin}>
+                  <label className="field-label">Admin name</label>
+                  <input
+                    className="form-input"
+                    required
+                    value={adminForm.name}
+                    onChange={(e) => setAdminForm({ ...adminForm, name: e.target.value })}
+                  />
+                  <label className="field-label">Email</label>
+                  <input
+                    className="form-input"
+                    type="email"
+                    required
+                    value={adminForm.email}
+                    onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
+                  />
+                  <p className="form-note">
+                    Admin accounts don't own any investor entity or holdings — they'll be forced through MFA
+                    enrollment before reaching the admin panel.
+                  </p>
+                </form>
               )}
-            </form>
+            </>
           )}
         </Modal>
       )}

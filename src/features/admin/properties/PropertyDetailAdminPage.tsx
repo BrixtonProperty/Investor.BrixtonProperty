@@ -8,11 +8,22 @@ import { fmtCurrency, fmtDate } from '../../../lib/format'
 import { useToast } from '../../../components/Toast'
 import StatList from '../../../components/StatList'
 import Modal from '../../../components/Modal'
+import Icon from '../../../components/Icon'
 import type { Property, Notice } from '../../../types/database.types'
 
 type PropertyForm = Pick<
   Property,
-  'name' | 'location' | 'description' | 'total_value' | 'initial_investment_amount' | 'valuation_date' | 'type' | 'size' | 'occupancy' | 'year_built'
+  | 'name'
+  | 'location'
+  | 'description'
+  | 'total_value'
+  | 'initial_investment_amount'
+  | 'total_equity_invested'
+  | 'valuation_date'
+  | 'type'
+  | 'size'
+  | 'occupancy'
+  | 'year_built'
 >
 
 export default function PropertyDetailAdminPage() {
@@ -29,7 +40,7 @@ export default function PropertyDetailAdminPage() {
   const deleteNotice = useDeleteNotice()
   const toast = useToast()
 
-  const signed = useSignedPhotoUrls((photos.data ?? []).slice(0, 1).map((p) => p.storage_path))
+  const signed = useSignedPhotoUrls((photos.data ?? []).map((p) => p.storage_path))
 
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<PropertyForm | null>(null)
@@ -45,6 +56,7 @@ export default function PropertyDetailAdminPage() {
         description: p.description,
         total_value: p.total_value,
         initial_investment_amount: p.initial_investment_amount,
+        total_equity_invested: p.total_equity_invested,
         valuation_date: p.valuation_date,
         type: p.type,
         size: p.size,
@@ -57,7 +69,8 @@ export default function PropertyDetailAdminPage() {
   if (property.isLoading || !form) return <div className="loading-state">Loading property…</div>
   if (!property.data) return <div className="error-state">Property not found.</div>
   const p = property.data
-  const heroUrl = photos.data?.[0] ? signed.data?.[photos.data[0].storage_path] : undefined
+  const coverPhoto = (photos.data ?? []).find((ph) => ph.is_cover) ?? photos.data?.[0]
+  const heroUrl = coverPhoto ? signed.data?.[coverPhoto.storage_path] : undefined
 
   async function handleSaveProperty(e: React.FormEvent) {
     e.preventDefault()
@@ -117,20 +130,22 @@ export default function PropertyDetailAdminPage() {
       </button>
       <div className="detail-hero" style={heroUrl ? { backgroundImage: `url('${heroUrl}')` } : undefined}>
         <button className="edit-fab" onClick={() => navigate(`/admin/properties/${id}/photos`)} type="button" aria-label="Manage photos">
-          ✎
+          <Icon name="edit" size={14} />
         </button>
       </div>
       <div className="page-head-row">
         <div>
           <h2 className="serif detail-name">{p.name}</h2>
           <div className="detail-loc">
-            <span className="pin">📍</span>
+            <span className="pin">
+              <Icon name="pin" size={13} />
+            </span>
             {p.location}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button className="btn-outline" onClick={() => setEditing(true)} type="button">
-            ✎ EDIT DETAILS
+            <Icon name="edit" size={12} /> EDIT DETAILS
           </button>
           <button className="btn-danger" onClick={handleArchive} type="button">
             ARCHIVE
@@ -146,11 +161,12 @@ export default function PropertyDetailAdminPage() {
             rows={[
               { icon: '$', label: 'Latest Valuation', value: fmtCurrency(p.total_value), caption: `As at ${fmtDate(p.valuation_date)}` },
               { icon: '$', label: 'Initial Investment Amount', value: p.initial_investment_amount != null ? fmtCurrency(p.initial_investment_amount) : '—' },
-              { icon: '📈', label: 'Property Type', value: p.type || '—' },
-              { icon: '📍', label: 'Location', value: p.location },
-              { icon: '🏢', label: 'Property Size', value: p.size || '—' },
+              { icon: '$', label: 'Total Equity Invested', value: p.total_equity_invested != null ? fmtCurrency(p.total_equity_invested) : '—' },
+              { icon: <Icon name="trendingUp" size={14} />, label: 'Property Type', value: p.type || '—' },
+              { icon: <Icon name="pin" size={14} />, label: 'Location', value: p.location },
+              { icon: <Icon name="building" size={14} />, label: 'Net Lettable Area (NLA)', value: p.size || '—' },
               { icon: '%', label: 'Occupancy', value: p.occupancy || '—' },
-              { icon: '📅', label: 'Year Built / Renovated', value: p.year_built ?? '—' },
+              { icon: <Icon name="calendar" size={14} />, label: 'Year Built / Renovated', value: p.year_built ?? '—' },
             ]}
           />
         </div>
@@ -164,7 +180,10 @@ export default function PropertyDetailAdminPage() {
           </div>
           <div className="photo-grid">
             <div className="photo-main" style={heroUrl ? { backgroundImage: `url('${heroUrl}')` } : undefined} />
-            <div style={{ fontSize: 12, color: 'var(--text-faint)' }}>{photos.data?.length ?? 0} photo(s) published.</div>
+            <div style={{ fontSize: 12, color: 'var(--text-faint)' }}>
+              {photos.data?.length ?? 0} photo(s) published.
+              {coverPhoto ? '' : ' No cover photo set yet.'}
+            </div>
             <button className="btn-outline" style={{ width: '100%', marginTop: 12 }} onClick={() => navigate(`/admin/properties/${id}/photos`)}>
               MANAGE PHOTOS
             </button>
@@ -214,10 +233,10 @@ export default function PropertyDetailAdminPage() {
             </div>
             <div style={{ display: 'flex', gap: 4 }}>
               <button className="btn-icon" onClick={() => openNoticeModal(n)} type="button" aria-label="Edit">
-                ✎
+                <Icon name="edit" size={14} />
               </button>
               <button className="btn-icon" onClick={() => handleDeleteNotice(n)} type="button" aria-label="Delete">
-                ✕
+                <Icon name="close" size={14} />
               </button>
             </div>
           </div>
@@ -266,6 +285,16 @@ export default function PropertyDetailAdminPage() {
               value={form.initial_investment_amount ?? ''}
               onChange={(e) => setForm({ ...form, initial_investment_amount: e.target.value ? Number(e.target.value) : null })}
             />
+            <label className="field-label">Total Equity Invested ($)</label>
+            <input
+              className="form-input"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Total equity invested into the property at purchase"
+              value={form.total_equity_invested ?? ''}
+              onChange={(e) => setForm({ ...form, total_equity_invested: e.target.value ? Number(e.target.value) : null })}
+            />
             <label className="field-label">Valuation Date</label>
             <input
               className="form-input"
@@ -276,7 +305,7 @@ export default function PropertyDetailAdminPage() {
             />
             <label className="field-label">Property Type</label>
             <input className="form-input" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} />
-            <label className="field-label">Size</label>
+            <label className="field-label">Net Lettable Area (NLA)</label>
             <input className="form-input" value={form.size ?? ''} onChange={(e) => setForm({ ...form, size: e.target.value })} placeholder="e.g. 6,250 m²" />
             <label className="field-label">Occupancy</label>
             <input className="form-input" value={form.occupancy ?? ''} onChange={(e) => setForm({ ...form, occupancy: e.target.value })} placeholder="e.g. 100%" />

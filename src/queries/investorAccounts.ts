@@ -23,6 +23,17 @@ export function useInvestorAccount(id: string | undefined) {
   })
 }
 
+export function useCreateInvestorAccount() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (displayName: string) =>
+      unwrap(
+        await supabase.from('investor_accounts').insert({ display_name: displayName }).select().single(),
+      ) as InvestorAccount,
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  })
+}
+
 export function useUpdateInvestorAccount() {
   const qc = useQueryClient()
   return useMutation({

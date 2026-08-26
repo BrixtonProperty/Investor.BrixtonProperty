@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { fmtMonthYear } from '../lib/format'
 import Lightbox from './Lightbox'
+import Icon from './Icon'
 
 export interface GridPhoto {
   id: string
@@ -8,6 +9,7 @@ export interface GridPhoto {
   title: string
   date: string
   isNew?: boolean
+  isCover?: boolean
 }
 
 export default function PhotoGrid({
@@ -15,12 +17,14 @@ export default function PhotoGrid({
   editable,
   onEditTile,
   onDeleteTile,
+  onSetCover,
   onAddClick,
 }: {
   photos: GridPhoto[]
   editable?: boolean
   onEditTile?: (photo: GridPhoto) => void
   onDeleteTile?: (photo: GridPhoto) => void
+  onSetCover?: (photo: GridPhoto) => void
   onAddClick?: () => void
 }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
@@ -46,7 +50,7 @@ export default function PhotoGrid({
       {editable && (
         <div className="gallery-toolbar">
           <button className="btn-outline" onClick={onAddClick} type="button">
-            + Add Photo
+            + Add Photos
           </button>
         </div>
       )}
@@ -64,6 +68,7 @@ export default function PhotoGrid({
                   onClick={() => setLightboxIndex(idx)}
                 >
                   {p.isNew && <span className="new-badge">NEW</span>}
+                  {p.isCover && <span className="cover-badge">COVER PHOTO</span>}
                   <div className="cap">
                     {p.title}
                     <br />
@@ -71,25 +76,40 @@ export default function PhotoGrid({
                   </div>
                   {editable && (
                     <div className="tile-edit-overlay">
+                      {onSetCover && !p.isCover && (
+                        <button
+                          type="button"
+                          aria-label="Set as cover photo"
+                          title="Set as cover photo"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onSetCover(p)
+                          }}
+                        >
+                          <Icon name="star" size={13} />
+                        </button>
+                      )}
                       <button
                         type="button"
                         aria-label="Replace photo"
+                        title="Replace photo"
                         onClick={(e) => {
                           e.stopPropagation()
                           onEditTile?.(p)
                         }}
                       >
-                        ✎
+                        <Icon name="edit" size={13} />
                       </button>
                       <button
                         type="button"
                         aria-label="Delete photo"
+                        title="Delete photo"
                         onClick={(e) => {
                           e.stopPropagation()
                           onDeleteTile?.(p)
                         }}
                       >
-                        ✕
+                        <Icon name="close" size={13} />
                       </button>
                     </div>
                   )}
@@ -101,8 +121,8 @@ export default function PhotoGrid({
       ))}
       {editable && photos.length === 0 && (
         <button className="add-photo-tile" onClick={onAddClick} type="button" style={{ width: '100%' }}>
-          <span style={{ fontSize: 24 }}>+</span>
-          Add the first photo
+          <Icon name="plus" size={22} />
+          Add the first photos
         </button>
       )}
       {lightboxIndex !== null && (

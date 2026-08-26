@@ -5,6 +5,7 @@ import { useInvestorHoldings } from '../../queries/investorHoldings'
 import { usePropertyThumbnails } from '../../queries/propertyPhotos'
 import { fmtCurrency, fmtDate, fmtPct } from '../../lib/format'
 import PropertyCard from '../../components/PropertyCard'
+import Icon from '../../components/Icon'
 
 export default function InvestmentsPage() {
   const navigate = useNavigate()
@@ -52,7 +53,7 @@ export default function InvestmentsPage() {
       <div className="card assist" style={{ marginTop: 22 }}>
         <div className="assist-l">
           <div className="ic-circle" style={{ width: 44, height: 44, fontSize: 18 }}>
-            🎧
+            <Icon name="headset" size={20} />
           </div>
           <div>
             <h4>Need assistance?</h4>

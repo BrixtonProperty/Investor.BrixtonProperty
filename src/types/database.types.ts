@@ -44,6 +44,7 @@ export type Property = {
   total_value: number
   valuation_date: string
   initial_investment_amount: number | null
+  total_equity_invested: number | null
   type: string
   size: string | null
   occupancy: string | null
@@ -121,6 +122,7 @@ export type SiteSettings = {
   id: number
   logo_storage_path: string | null
   badge_storage_path: string | null
+  dashboard_hero_storage_path: string | null
   company_name: string
   company_tagline: string
   login_background_storage_path: string | null

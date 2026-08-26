@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { fmtDate } from '../lib/format'
+import Icon from './Icon'
 
 export interface LightboxPhoto {
   id: string
@@ -40,7 +41,7 @@ export default function Lightbox({
           {index + 1} / {photos.length}
         </span>
         <button className="lightbox-close" onClick={onClose} type="button" aria-label="Close">
-          ✕
+          <Icon name="close" size={18} />
         </button>
       </div>
       <div className="lightbox-main" onClick={(e) => e.stopPropagation()}>

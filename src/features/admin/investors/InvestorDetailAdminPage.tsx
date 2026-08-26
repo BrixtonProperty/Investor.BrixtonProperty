@@ -20,6 +20,7 @@ import { fmtCurrency, fmtPct } from '../../../lib/format'
 import { useToast } from '../../../components/Toast'
 import Tabs from '../../../components/Tabs'
 import Modal from '../../../components/Modal'
+import Icon from '../../../components/Icon'
 import type { InvestorUser } from '../../../types/database.types'
 
 type Tab = 'holdings' | 'profile' | 'logins'
@@ -194,9 +195,15 @@ export default function InvestorDetailAdminPage() {
 
         {tab === 'logins' && (
           <div style={{ padding: '18px 22px' }}>
+            {(logins.data ?? []).length === 0 && (
+              <div className="empty-state" style={{ marginBottom: 12 }}>
+                No login set up yet. Holdings can be assigned and edited without one — set up an account whenever
+                you're ready to give this investor access.
+              </div>
+            )}
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
               <button className="btn-outline" onClick={() => setLoginModalOpen(true)} type="button">
-                + ADD LOGIN
+                {(logins.data ?? []).length === 0 ? '+ SET UP ACCOUNT' : '+ ADD LOGIN'}
               </button>
             </div>
             {(logins.data ?? []).map((u) => (
@@ -270,7 +277,7 @@ export default function InvestorDetailAdminPage() {
               value={assignForm.ownershipPct}
               onChange={(e) => setAssignForm({ ...assignForm, ownershipPct: e.target.value })}
             />
-            <label className="field-label">Invested Amount ($)</label>
+            <label className="field-label">Initial Investment ($)</label>
             <input
               className="form-input"
               type="number"
@@ -286,7 +293,7 @@ export default function InvestorDetailAdminPage() {
 
       {loginModalOpen && (
         <Modal
-          title="Add Login"
+          title={(logins.data ?? []).length === 0 ? 'Set Up Investor Account' : 'Add Login'}
           onClose={closeLoginModal}
           footer={
             inviteLink ? (
@@ -320,8 +327,9 @@ export default function InvestorDetailAdminPage() {
           ) : (
             <form id="add-login-form" onSubmit={handleAddLogin}>
               <p style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 0 }}>
-                Adds another individual login (e.g. an accountant or family member) that sees the same holdings as
-                this entity.
+                {(logins.data ?? []).length === 0
+                  ? "Enter the investor's email to generate their sign-up link. It's not sent automatically — copy it and send it yourself."
+                  : 'Adds another individual login (e.g. an accountant or family member) that sees the same holdings as this entity.'}
               </p>
               <label className="field-label">Name</label>
               <input className="form-input" required value={loginForm.name} onChange={(e) => setLoginForm({ ...loginForm, name: e.target.value })} />
@@ -383,11 +391,11 @@ function HoldingRow({
           </button>
         ) : (
           <button className="btn-icon" type="button" onClick={() => setEditing(true)} aria-label="Edit">
-            ✎
+            <Icon name="edit" size={14} />
           </button>
         )}
         <button className="btn-icon" type="button" onClick={onRemove} aria-label="Remove">
-          ✕
+          <Icon name="close" size={14} />
         </button>
       </div>
     </div>

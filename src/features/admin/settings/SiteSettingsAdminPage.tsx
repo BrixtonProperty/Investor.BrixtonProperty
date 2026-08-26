@@ -42,7 +42,7 @@ export default function SiteSettingsAdminPage() {
   }
 
   async function handleAssetUpload(
-    field: 'logo_storage_path' | 'badge_storage_path' | 'login_background_storage_path',
+    field: 'logo_storage_path' | 'badge_storage_path' | 'login_background_storage_path' | 'dashboard_hero_storage_path',
     prefix: string,
     file: File | undefined,
   ) {
@@ -83,6 +83,12 @@ export default function SiteSettingsAdminPage() {
           currentPath={settings?.login_background_storage_path}
           uploading={uploading === 'login_background_storage_path'}
           onChoose={(f) => handleAssetUpload('login_background_storage_path', 'login-bg', f)}
+        />
+        <AssetUploader
+          label="Dashboard hero banner"
+          currentPath={settings?.dashboard_hero_storage_path}
+          uploading={uploading === 'dashboard_hero_storage_path'}
+          onChoose={(f) => handleAssetUpload('dashboard_hero_storage_path', 'dashboard-hero', f)}
         />
 
         <label className="field-label" style={{ marginTop: 18, display: 'block' }}>

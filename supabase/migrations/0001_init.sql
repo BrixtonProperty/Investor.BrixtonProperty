@@ -49,6 +49,7 @@ create table if not exists properties (
   total_value numeric(14, 2) not null,   -- "Latest Valuation"
   valuation_date date not null,
   initial_investment_amount numeric(14, 2),   -- what Brixton originally paid to acquire it
+  total_equity_invested numeric(14, 2),   -- total equity invested into the property at purchase
   type text not null default '',
   size text,
   occupancy text,
@@ -122,6 +123,7 @@ create table if not exists site_settings (
   id int primary key default 1,
   logo_storage_path text,
   badge_storage_path text,
+  dashboard_hero_storage_path text,
   company_name text not null default 'Brixton Property Limited',
   company_tagline text not null default 'Building long term value through quality property and trusted partnerships.',
   login_background_storage_path text,

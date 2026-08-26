@@ -69,12 +69,13 @@ h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; mar
 .card{ background:var(--panel); border:1px solid var(--border); border-radius:10px; }
 .view-all{ font-size:12px; color:var(--orange); cursor:pointer; font-weight:600; border:none; background:none; }
 .btn-outline{
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
   border:1px solid var(--orange); color:var(--orange); background:none;
   padding:10px 22px; border-radius:6px; font-size:12px; letter-spacing:.5px; font-weight:600; cursor:pointer;
 }
 .btn-outline:hover{ background:var(--orange-soft); }
 .btn-outline:disabled{ opacity:.5; cursor:not-allowed; }
-.btn-solid{ background:var(--orange); color:#fff; border:none; padding:11px 24px; border-radius:6px; font-size:12px; font-weight:600; letter-spacing:.5px; cursor:pointer; }
+.btn-solid{ display:inline-flex; align-items:center; justify-content:center; gap:6px; background:var(--orange); color:#fff; border:none; padding:11px 24px; border-radius:6px; font-size:12px; font-weight:600; letter-spacing:.5px; cursor:pointer; }
 .btn-solid:hover{ background:#d97710; }
 .btn-solid:disabled{ opacity:.5; cursor:not-allowed; }
 .btn-danger{ background:none; border:1px solid var(--danger); color:var(--danger); padding:10px 20px; border-radius:6px; font-size:12px; font-weight:600; letter-spacing:.5px; cursor:pointer; }
@@ -212,7 +213,7 @@ h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; mar
 .login-screen{ display:flex; min-height:100vh; }
 .login-photo{ flex:1.05; background-size:cover; background-position:center; background-color:#ddd; }
 .login-panel{ flex:1; display:flex; flex-direction:column; justify-content:center; padding:60px 90px; position:relative; background:var(--bg); }
-.login-lang{ position:absolute; top:28px; right:36px; font-size:13px; color:var(--text-dim); }
+.login-lang{ position:absolute; top:28px; right:36px; font-size:13px; color:var(--text-dim); display:flex; align-items:center; gap:6px; }
 .login-logo{ margin-bottom:30px; }
 .login-logo img{ max-height:72px; max-width:100%; width:auto; height:auto; object-fit:contain; display:block; }
 .login-panel h1{ font-family:'Georgia',serif; font-weight:400; font-size:27px; margin:0 0 8px; }
@@ -250,6 +251,7 @@ h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; mar
 .photo-grid-page{ display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
 .photo-tile{ position:relative; border-radius:8px; overflow:hidden; cursor:pointer; height:340px; background:#eee center/cover; }
 .photo-tile .new-badge{ position:absolute; top:10px; left:10px; background:var(--orange); color:#fff; font-size:10px; font-weight:700; letter-spacing:.5px; padding:3px 8px; border-radius:4px; }
+.photo-tile .cover-badge{ position:absolute; top:10px; right:10px; background:rgba(20,20,20,.75); color:#fff; font-size:10px; font-weight:700; letter-spacing:.5px; padding:3px 8px; border-radius:4px; }
 .photo-tile .cap{ position:absolute; bottom:0; left:0; right:0; padding:8px 10px; font-size:11px; color:#fff; background:linear-gradient(0deg, rgba(0,0,0,.55), rgba(0,0,0,0)); opacity:0; transition:opacity .15s; }
 .photo-tile:hover .cap{ opacity:1; }
 .photo-tile .tile-edit-overlay{ position:absolute; top:8px; right:8px; display:flex; gap:6px; opacity:0; transition:opacity .15s; }

@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../app/AuthProvider'
 import { useProperties } from '../../../queries/properties'
 import { usePropertyThumbnails } from '../../../queries/propertyPhotos'
-import { useAllVisibleNotices } from '../../../queries/notices'
+import { useMergedUpdates } from '../../../queries/updatesFeed'
+import { useSiteSettings } from '../../../queries/siteSettings'
+import { publicAssetUrl } from '../../../lib/signedUrl'
 import { fmtCurrency, fmtDate } from '../../../lib/format'
+import Icon from '../../../components/Icon'
 
 /** Admin's unscoped equivalent of the investor Dashboard -- totals across every
  * property in the system, since an admin has no personal holdings of their own. */
@@ -12,7 +15,8 @@ export default function PortfolioDashboardPage() {
   const { investorUser } = useAuth()
   const navigate = useNavigate()
   const properties = useProperties()
-  const notices = useAllVisibleNotices()
+  const updates = useMergedUpdates()
+  const { data: settings } = useSiteSettings()
   const propertyIds = useMemo(() => properties.data?.map((p) => p.id) ?? [], [properties.data])
   const { thumbnails } = usePropertyThumbnails(propertyIds)
 
@@ -26,8 +30,8 @@ export default function PortfolioDashboardPage() {
     }
   }, [properties.data])
 
-  const heroUrl = properties.data?.[0] ? thumbnails.get(properties.data[0].id) : undefined
-  const recentNotices = (notices.data ?? []).slice(0, 2)
+  const heroUrl = publicAssetUrl(settings?.dashboard_hero_storage_path)
+  const recentUpdates = updates.items.slice(0, 2)
   const propertyById = new Map((properties.data ?? []).map((p) => [p.id, p]))
 
   if (properties.isLoading) return <div className="loading-state">Loading portfolio…</div>
@@ -51,21 +55,27 @@ export default function PortfolioDashboardPage() {
         <div className="stat-panel-title">Portfolio Summary</div>
         <div className="stat-row3">
           <div className="stat-item">
-            <div className="ic-circle">🏢</div>
+            <div className="ic-circle">
+              <Icon name="building" />
+            </div>
             <div>
               <div className="slabel">Total Properties</div>
               <div className="sval">{summary.totalProperties}</div>
             </div>
           </div>
           <div className="stat-item">
-            <div className="ic-circle">⏱</div>
+            <div className="ic-circle">
+              <Icon name="clock" />
+            </div>
             <div>
               <div className="slabel">Total Initial Investment</div>
               <div className="sval">{fmtCurrency(summary.totalInitialInvestment)}</div>
             </div>
           </div>
           <div className="stat-item">
-            <div className="ic-circle">📈</div>
+            <div className="ic-circle">
+              <Icon name="trendingUp" />
+            </div>
             <div>
               <div className="slabel">Total Latest Valuation</div>
               <div className="sval">{fmtCurrency(summary.totalValue)}</div>
@@ -115,18 +125,18 @@ export default function PortfolioDashboardPage() {
                 VIEW ALL →
               </button>
             </div>
-            {recentNotices.length === 0 && <div className="empty-note">No updates published yet.</div>}
-            {recentNotices.map((n) => (
-              <div className="update-card-sm" key={n.id}>
+            {recentUpdates.length === 0 && <div className="empty-note">No updates published yet.</div>}
+            {recentUpdates.map((u) => (
+              <div className="update-card-sm" key={u.id}>
                 <div
                   className="thumb-sq"
-                  style={thumbnails.get(n.property_id) ? { backgroundImage: `url('${thumbnails.get(n.property_id)}')` } : undefined}
+                  style={thumbnails.get(u.property_id) ? { backgroundImage: `url('${thumbnails.get(u.property_id)}')` } : undefined}
                 />
                 <div>
-                  <span className="tag-pill">{propertyById.get(n.property_id)?.name ?? 'UPDATE'}</span>
-                  <div className="ut">{n.title}</div>
-                  <div className="ud">{n.description}</div>
-                  <div className="udate">{fmtDate(n.notice_date)}</div>
+                  <span className="tag-pill">{propertyById.get(u.property_id)?.name ?? 'UPDATE'}</span>
+                  <div className="ut">{u.title}</div>
+                  {u.description && <div className="ud">{u.description}</div>}
+                  <div className="udate">{fmtDate(u.date)}</div>
                 </div>
               </div>
             ))}

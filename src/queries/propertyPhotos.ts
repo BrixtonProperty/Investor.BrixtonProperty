@@ -123,6 +123,45 @@ export function useReplacePropertyPhoto() {
   })
 }
 
+/** Uploads a cropped (fixed 16:9) cover image as its own photo row, marks it
+ * as the cover, and clears is_cover from whichever photo held it before. */
+export function useCropAndSetCover() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ propertyId, blob, title }: { propertyId: string; blob: Blob; title: string }) => {
+      await supabase
+        .from('property_photos')
+        .update({ is_cover: false })
+        .eq('property_id', propertyId)
+        .eq('is_cover', true)
+
+      const path = `${propertyId}/${crypto.randomUUID()}.jpg`
+      const upload = await supabase.storage
+        .from('property-photos')
+        .upload(path, blob, { cacheControl: '3600', contentType: 'image/jpeg' })
+      if (upload.error) throw new Error(upload.error.message)
+
+      return unwrap(
+        await supabase
+          .from('property_photos')
+          .insert({
+            property_id: propertyId,
+            storage_path: path,
+            title,
+            taken_or_added_date: new Date().toISOString().slice(0, 10),
+            is_cover: true,
+          })
+          .select()
+          .single(),
+      ) as PropertyPhoto
+    },
+    onSuccess: (_data, { propertyId }) => {
+      qc.invalidateQueries({ queryKey: [KEY, propertyId] })
+      qc.invalidateQueries({ queryKey: [KEY, 'covers'] })
+    },
+  })
+}
+
 export function useDeletePropertyPhoto() {
   const qc = useQueryClient()
   return useMutation({

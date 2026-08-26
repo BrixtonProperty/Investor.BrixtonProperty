@@ -8,6 +8,7 @@ import {
 import { useToast } from '../../../components/Toast'
 import Modal from '../../../components/Modal'
 import DocTypePill from '../../../components/DocTypePill'
+import Icon from '../../../components/Icon'
 import type { DocumentCategory } from '../../../types/database.types'
 
 const SWATCHES: { bg: string; text: string }[] = [
@@ -85,10 +86,10 @@ export default function DocumentCategoriesAdminPage() {
               <DocTypePill category={c} />
             </div>
             <button className="btn-icon" onClick={() => openEdit(c)} type="button" aria-label="Edit">
-              ✎
+              <Icon name="edit" size={14} />
             </button>
             <button className="btn-icon" onClick={() => handleDelete(c)} type="button" aria-label="Delete">
-              ✕
+              <Icon name="close" size={14} />
             </button>
           </div>
         ))}

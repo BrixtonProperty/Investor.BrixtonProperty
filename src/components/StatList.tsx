@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
+import Icon from './Icon'
 
 export interface StatRow {
-  icon: string
+  icon: ReactNode
   label: string
   value: ReactNode
   caption?: string
@@ -25,7 +26,7 @@ export default function StatList({ rows }: { rows: StatRow[] }) {
           </div>
           {row.onEdit && (
             <button className="field-edit-btn row-edit" onClick={row.onEdit} type="button" aria-label={`Edit ${row.label}`}>
-              ✎
+              <Icon name="edit" size={13} />
             </button>
           )}
         </div>

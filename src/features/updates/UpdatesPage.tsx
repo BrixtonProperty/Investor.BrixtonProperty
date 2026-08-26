@@ -1,22 +1,17 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProperties } from '../../queries/properties'
 import { useInvestorHoldings } from '../../queries/investorHoldings'
 import { usePropertyThumbnails } from '../../queries/propertyPhotos'
-import { useAllVisibleNotices } from '../../queries/notices'
-import { useAllVisibleDocuments } from '../../queries/documents'
+import { useMergedUpdates } from '../../queries/updatesFeed'
 import { fmtCurrency, fmtDate, fmtPct } from '../../lib/format'
-import Tabs from '../../components/Tabs'
-
-type UpdTab = 'communications' | 'reports'
+import { openDocument } from '../../lib/signedUrl'
 
 export default function UpdatesPage() {
   const navigate = useNavigate()
-  const [tab, setTab] = useState<UpdTab>('communications')
   const properties = useProperties()
   const holdings = useInvestorHoldings()
-  const notices = useAllVisibleNotices()
-  const documents = useAllVisibleDocuments()
+  const updates = useMergedUpdates()
   const propertyIds = useMemo(() => properties.data?.map((p) => p.id) ?? [], [properties.data])
   const { thumbnails } = usePropertyThumbnails(propertyIds)
 
@@ -38,10 +33,7 @@ export default function UpdatesPage() {
 
       {(properties.data ?? []).map((p) => {
         const h = holdingByProperty.get(p.id)
-        const items =
-          tab === 'communications'
-            ? (notices.data ?? []).filter((n) => n.property_id === p.id).slice(0, 3).map((n) => ({ id: n.id, title: n.title, date: n.notice_date }))
-            : (documents.data ?? []).filter((d) => d.property_id === p.id).slice(0, 3).map((d) => ({ id: d.id, title: d.name, date: d.date_added }))
+        const items = updates.items.filter((u) => u.property_id === p.id).slice(0, 3)
 
         return (
           <div className="card upd-property" key={p.id}>
@@ -55,29 +47,27 @@ export default function UpdatesPage() {
               <div className="uval">{h ? fmtPct(h.ownership_pct) : '—'}</div>
             </div>
             <div className="upd-comms">
-              <Tabs
-                items={[
-                  { id: 'communications', label: 'Communications' },
-                  { id: 'reports', label: 'Reports' },
-                ]}
-                active={tab}
-                onChange={(id) => setTab(id as UpdTab)}
-                trailing={
-                  <span
-                    className="view-all"
-                    style={{ marginLeft: 'auto', alignSelf: 'center', cursor: 'pointer' }}
-                    onClick={() => navigate(`/investments/${p.id}/documents`)}
-                  >
-                    View all →
-                  </span>
-                }
-              />
+              <div className="panel-head" style={{ padding: '12px 20px 0' }}>
+                <h4 style={{ fontSize: 13 }}>Communications &amp; Reports</h4>
+                <span
+                  className="view-all"
+                  onClick={() => navigate(`/investments/${p.id}/documents`)}
+                >
+                  View all →
+                </span>
+              </div>
               {items.length === 0 && <div className="empty-note">Nothing published yet.</div>}
               {items.map((item) => (
                 <div
                   className="upd-row"
                   key={item.id}
-                  onClick={() => navigate(`/investments/${p.id}/documents`)}
+                  onClick={() => {
+                    if (item.kind === 'document' && item.storage_path) {
+                      openDocument(item.storage_path).catch(() => {})
+                    } else {
+                      navigate(`/investments/${p.id}`)
+                    }
+                  }}
                 >
                   <div className="thumb-sm" style={thumbnails.get(p.id) ? { backgroundImage: `url('${thumbnails.get(p.id)}')` } : undefined} />
                   <div className="ut2">{item.title}</div>

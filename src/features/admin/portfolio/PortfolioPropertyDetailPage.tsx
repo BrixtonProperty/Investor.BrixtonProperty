@@ -5,6 +5,7 @@ import { useDocuments } from '../../../queries/documents'
 import { fmtCurrency, fmtDate } from '../../../lib/format'
 import { openDocument } from '../../../lib/signedUrl'
 import StatList from '../../../components/StatList'
+import Icon from '../../../components/Icon'
 
 /** Read-only, admin's unscoped equivalent of the investor Property Detail page. */
 export default function PortfolioPropertyDetailPage() {
@@ -13,15 +14,15 @@ export default function PortfolioPropertyDetailPage() {
   const property = useProperty(id)
   const photos = usePropertyPhotos(id)
   const documents = useDocuments(id)
-  const signed = useSignedPhotoUrls((photos.data ?? []).slice(0, 7).map((p) => p.storage_path))
+  const signed = useSignedPhotoUrls((photos.data ?? []).map((p) => p.storage_path))
 
   if (property.isLoading) return <div className="loading-state">Loading property…</div>
   if (!property.data) return <div className="error-state">Property not found.</div>
 
   const p = property.data
-  const heroPhoto = photos.data?.[0]
+  const heroPhoto = (photos.data ?? []).find((ph) => ph.is_cover) ?? photos.data?.[0]
   const heroUrl = heroPhoto ? signed.data?.[heroPhoto.storage_path] : undefined
-  const subPhotos = (photos.data ?? []).slice(1, 7)
+  const subPhotos = (photos.data ?? []).filter((ph) => ph.id !== heroPhoto?.id).slice(0, 6)
   const recentDocs = (documents.data ?? []).slice(0, 6)
 
   async function handleOpenDoc(path: string) {
@@ -40,7 +41,9 @@ export default function PortfolioPropertyDetailPage() {
       <div className="detail-hero" style={heroUrl ? { backgroundImage: `url('${heroUrl}')` } : undefined} />
       <h2 className="serif detail-name">{p.name}</h2>
       <div className="detail-loc">
-        <span className="pin">📍</span>
+        <span className="pin">
+          <Icon name="pin" size={13} />
+        </span>
         {p.location}
       </div>
       <div className="detail-desc">{p.description}</div>
@@ -61,11 +64,16 @@ export default function PortfolioPropertyDetailPage() {
                 label: 'Initial Investment Amount',
                 value: p.initial_investment_amount != null ? fmtCurrency(p.initial_investment_amount) : '—',
               },
-              { icon: '📈', label: 'Property Type', value: p.type || '—' },
-              { icon: '📍', label: 'Location', value: p.location },
-              { icon: '🏢', label: 'Property Size', value: p.size || '—' },
+              {
+                icon: '$',
+                label: 'Total Equity Invested',
+                value: p.total_equity_invested != null ? fmtCurrency(p.total_equity_invested) : '—',
+              },
+              { icon: <Icon name="trendingUp" size={14} />, label: 'Property Type', value: p.type || '—' },
+              { icon: <Icon name="pin" size={14} />, label: 'Location', value: p.location },
+              { icon: <Icon name="building" size={14} />, label: 'Net Lettable Area (NLA)', value: p.size || '—' },
               { icon: '%', label: 'Occupancy', value: p.occupancy || '—' },
-              { icon: '📅', label: 'Year Built / Renovated', value: p.year_built ?? '—' },
+              { icon: <Icon name="calendar" size={14} />, label: 'Year Built / Renovated', value: p.year_built ?? '—' },
             ]}
           />
         </div>
@@ -125,7 +133,7 @@ export default function PortfolioPropertyDetailPage() {
       <div className="card assist" style={{ marginTop: 22 }}>
         <div className="assist-l">
           <div className="ic-circle" style={{ width: 44, height: 44, fontSize: 18 }}>
-            🎧
+            <Icon name="headset" size={20} />
           </div>
           <div>
             <h4>Need to edit this property?</h4>

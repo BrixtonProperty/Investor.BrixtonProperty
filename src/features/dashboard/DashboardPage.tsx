@@ -4,15 +4,19 @@ import { useAuth } from '../../app/AuthProvider'
 import { useProperties } from '../../queries/properties'
 import { useInvestorHoldings } from '../../queries/investorHoldings'
 import { usePropertyThumbnails } from '../../queries/propertyPhotos'
-import { useAllVisibleNotices } from '../../queries/notices'
+import { useMergedUpdates } from '../../queries/updatesFeed'
+import { useSiteSettings } from '../../queries/siteSettings'
+import { publicAssetUrl } from '../../lib/signedUrl'
 import { fmtCurrency, fmtDate, fmtPct } from '../../lib/format'
+import Icon from '../../components/Icon'
 
 export default function DashboardPage() {
   const { investorUser } = useAuth()
   const navigate = useNavigate()
   const properties = useProperties()
   const holdings = useInvestorHoldings()
-  const notices = useAllVisibleNotices()
+  const updates = useMergedUpdates()
+  const { data: settings } = useSiteSettings()
   const propertyIds = useMemo(() => properties.data?.map((p) => p.id) ?? [], [properties.data])
   const { thumbnails } = usePropertyThumbnails(propertyIds)
 
@@ -31,8 +35,8 @@ export default function DashboardPage() {
     }
   }, [holdings.data])
 
-  const heroUrl = properties.data?.[0] ? thumbnails.get(properties.data[0].id) : undefined
-  const recentNotices = (notices.data ?? []).slice(0, 2)
+  const heroUrl = publicAssetUrl(settings?.dashboard_hero_storage_path)
+  const recentUpdates = updates.items.slice(0, 2)
 
   if (properties.isLoading || holdings.isLoading) {
     return <div className="loading-state">Loading your dashboard…</div>
@@ -57,7 +61,9 @@ export default function DashboardPage() {
         <div className="stat-panel-title">Portfolio Summary</div>
         <div className="stat-row3">
           <div className="stat-item">
-            <div className="ic-circle">🏢</div>
+            <div className="ic-circle">
+              <Icon name="building" />
+            </div>
             <div>
               <div className="slabel">Total Investments</div>
               <div className="sval">{summary.totalInvestments}</div>
@@ -65,7 +71,9 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="stat-item">
-            <div className="ic-circle">⏱</div>
+            <div className="ic-circle">
+              <Icon name="clock" />
+            </div>
             <div>
               <div className="slabel">Total Invested</div>
               <div className="sval">{fmtCurrency(summary.totalInvested)}</div>
@@ -73,7 +81,9 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="stat-item">
-            <div className="ic-circle">📈</div>
+            <div className="ic-circle">
+              <Icon name="trendingUp" />
+            </div>
             <div>
               <div className="slabel">Total Asset Value</div>
               <div className="sval">{fmtCurrency(summary.totalAssetValue)}</div>
@@ -113,7 +123,7 @@ export default function DashboardPage() {
                       <b>{fmtPct(h.ownership_pct)}</b>
                     </div>
                     <div>
-                      <span>Invested</span>
+                      <span>Initial Investment</span>
                       <b>{fmtCurrency(h.invested_amount)}</b>
                     </div>
                   </div>
@@ -140,21 +150,21 @@ export default function DashboardPage() {
                 VIEW ALL →
               </button>
             </div>
-            {recentNotices[0] ? (
+            {recentUpdates[0] ? (
               <div className="update-card-sm">
                 <div
                   className="thumb-sq"
                   style={
-                    thumbnails.get(recentNotices[0].property_id)
-                      ? { backgroundImage: `url('${thumbnails.get(recentNotices[0].property_id)}')` }
+                    thumbnails.get(recentUpdates[0].property_id)
+                      ? { backgroundImage: `url('${thumbnails.get(recentUpdates[0].property_id)}')` }
                       : undefined
                   }
                 />
                 <div>
-                  <span className="tag-pill">{propertyById.get(recentNotices[0].property_id)?.name ?? 'UPDATE'}</span>
-                  <div className="ut">{recentNotices[0].title}</div>
-                  <div className="ud">{recentNotices[0].description}</div>
-                  <div className="udate">{fmtDate(recentNotices[0].notice_date)}</div>
+                  <span className="tag-pill">{propertyById.get(recentUpdates[0].property_id)?.name ?? 'UPDATE'}</span>
+                  <div className="ut">{recentUpdates[0].title}</div>
+                  {recentUpdates[0].description && <div className="ud">{recentUpdates[0].description}</div>}
+                  <div className="udate">{fmtDate(recentUpdates[0].date)}</div>
                 </div>
               </div>
             ) : (
@@ -163,37 +173,39 @@ export default function DashboardPage() {
           </div>
           <div className="card">
             <div className="panel-head">
-              <h4>Recent Notices</h4>
+              <h4>Recent Updates</h4>
               <button className="view-all" onClick={() => navigate('/updates')} type="button">
                 VIEW ALL →
               </button>
             </div>
-            {recentNotices[1] ? (
+            {recentUpdates[1] ? (
               <div className="update-card-sm">
                 <div
                   className="thumb-sq"
                   style={
-                    thumbnails.get(recentNotices[1].property_id)
-                      ? { backgroundImage: `url('${thumbnails.get(recentNotices[1].property_id)}')` }
+                    thumbnails.get(recentUpdates[1].property_id)
+                      ? { backgroundImage: `url('${thumbnails.get(recentUpdates[1].property_id)}')` }
                       : undefined
                   }
                 />
                 <div>
-                  <span className="tag-pill gray">{propertyById.get(recentNotices[1].property_id)?.name ?? 'NOTICE'}</span>
-                  <div className="ut">{recentNotices[1].title}</div>
-                  <div className="ud">{recentNotices[1].description}</div>
-                  <div className="udate">{fmtDate(recentNotices[1].notice_date)}</div>
+                  <span className="tag-pill gray">{propertyById.get(recentUpdates[1].property_id)?.name ?? 'UPDATE'}</span>
+                  <div className="ut">{recentUpdates[1].title}</div>
+                  {recentUpdates[1].description && <div className="ud">{recentUpdates[1].description}</div>}
+                  <div className="udate">{fmtDate(recentUpdates[1].date)}</div>
                 </div>
               </div>
             ) : (
-              <div className="empty-note">No notices yet.</div>
+              <div className="empty-note">No updates yet.</div>
             )}
           </div>
         </div>
       </div>
 
       <button className="card stay-informed" onClick={() => navigate('/updates')} type="button">
-        <div className="ic-circle">💬</div>
+        <div className="ic-circle">
+          <Icon name="chat" />
+        </div>
         <div>
           <h5>Stay informed</h5>
           <p>We regularly share important updates and reports. Check the Investor Updates section for the latest information.</p>
