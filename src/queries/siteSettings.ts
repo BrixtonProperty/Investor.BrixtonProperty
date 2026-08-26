@@ -24,10 +24,13 @@ export function useUpdateSiteSettings() {
   })
 }
 
-export async function uploadSiteAsset(file: File, prefix: string): Promise<string> {
-  const ext = file.name.split('.').pop() || 'png'
+export async function uploadSiteAsset(file: File | Blob, prefix: string): Promise<string> {
+  const ext = file instanceof File ? file.name.split('.').pop() || 'png' : 'jpg'
   const path = `${prefix}/${crypto.randomUUID()}.${ext}`
-  const { error } = await supabase.storage.from('site-assets').upload(path, file, { upsert: true })
+  const { error } = await supabase.storage.from('site-assets').upload(path, file, {
+    upsert: true,
+    contentType: file instanceof File ? file.type : 'image/jpeg',
+  })
   if (error) throw new Error(error.message)
   return path
 }

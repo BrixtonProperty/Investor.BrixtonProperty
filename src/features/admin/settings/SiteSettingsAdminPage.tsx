@@ -2,7 +2,54 @@ import { useEffect, useState } from 'react'
 import { useSiteSettings, useUpdateSiteSettings, uploadSiteAsset } from '../../../queries/siteSettings'
 import { publicAssetUrl } from '../../../lib/signedUrl'
 import { useToast } from '../../../components/Toast'
+import ImageCropper from '../../../components/ImageCropper'
 import type { SiteSettings } from '../../../types/database.types'
+
+type AssetField = 'logo_storage_path' | 'badge_storage_path' | 'login_background_storage_path' | 'dashboard_hero_storage_path'
+
+interface AssetConfig {
+  field: AssetField
+  label: string
+  prefix: string
+  aspectRatio: number
+  frameWidth: number
+  helpText: string
+}
+
+const ASSETS: AssetConfig[] = [
+  {
+    field: 'logo_storage_path',
+    label: 'Sidebar logo',
+    prefix: 'logo',
+    aspectRatio: 3,
+    frameWidth: 420,
+    helpText: 'Crops to a wide logo lockup shape — it displays at full sidebar width, scaled to fit.',
+  },
+  {
+    field: 'badge_storage_path',
+    label: 'Company badge (bottom-left)',
+    prefix: 'badge',
+    aspectRatio: 1,
+    frameWidth: 320,
+    helpText: 'Crops to a square — it always displays as a small square badge.',
+  },
+  {
+    field: 'login_background_storage_path',
+    label: 'Login page background photo',
+    prefix: 'login-bg',
+    aspectRatio: 3 / 4,
+    frameWidth: 300,
+    helpText: 'Crops to a tall portrait shape, matching the full-height photo panel on the login screen.',
+  },
+  {
+    field: 'dashboard_hero_storage_path',
+    label: 'Dashboard hero banner',
+    prefix: 'dashboard-hero',
+    aspectRatio: 16 / 9,
+    frameWidth: 480,
+    helpText: 'Crops to a wide banner shape, matching the photo strip at the top of the investor Dashboard.',
+  },
+]
 
 type FormState = Pick<
   SiteSettings,
@@ -15,7 +62,8 @@ export default function SiteSettingsAdminPage() {
   const toast = useToast()
 
   const [form, setForm] = useState<FormState | null>(null)
-  const [uploading, setUploading] = useState<string | null>(null)
+  const [uploadingField, setUploadingField] = useState<AssetField | null>(null)
+  const [cropping, setCropping] = useState<{ config: AssetConfig; objectUrl: string } | null>(null)
 
   useEffect(() => {
     if (settings) {
@@ -41,21 +89,29 @@ export default function SiteSettingsAdminPage() {
     }
   }
 
-  async function handleAssetUpload(
-    field: 'logo_storage_path' | 'badge_storage_path' | 'login_background_storage_path' | 'dashboard_hero_storage_path',
-    prefix: string,
-    file: File | undefined,
-  ) {
+  function handleFileChosen(config: AssetConfig, file: File | undefined) {
     if (!file) return
-    setUploading(field)
+    setCropping({ config, objectUrl: URL.createObjectURL(file) })
+  }
+
+  function closeCropper() {
+    if (cropping) URL.revokeObjectURL(cropping.objectUrl)
+    setCropping(null)
+  }
+
+  async function handleCropSave(blob: Blob) {
+    if (!cropping) return
+    const { config } = cropping
+    setUploadingField(config.field)
     try {
-      const path = await uploadSiteAsset(file, prefix)
-      await update.mutateAsync({ [field]: path })
+      const path = await uploadSiteAsset(blob, config.prefix)
+      await update.mutateAsync({ [config.field]: path })
       toast.show('Image updated.')
+      closeCropper()
     } catch (err) {
       toast.show(err instanceof Error ? err.message : 'Could not upload image.', 'error')
     } finally {
-      setUploading(null)
+      setUploadingField(null)
     }
   }
 
@@ -66,30 +122,15 @@ export default function SiteSettingsAdminPage() {
 
       <div className="card" style={{ padding: '22px 24px', marginBottom: 20 }}>
         <h4 style={{ marginTop: 0 }}>Branding</h4>
-        <AssetUploader
-          label="Sidebar logo"
-          currentPath={settings?.logo_storage_path}
-          uploading={uploading === 'logo_storage_path'}
-          onChoose={(f) => handleAssetUpload('logo_storage_path', 'logo', f)}
-        />
-        <AssetUploader
-          label="Company badge (bottom-left)"
-          currentPath={settings?.badge_storage_path}
-          uploading={uploading === 'badge_storage_path'}
-          onChoose={(f) => handleAssetUpload('badge_storage_path', 'badge', f)}
-        />
-        <AssetUploader
-          label="Login page background photo"
-          currentPath={settings?.login_background_storage_path}
-          uploading={uploading === 'login_background_storage_path'}
-          onChoose={(f) => handleAssetUpload('login_background_storage_path', 'login-bg', f)}
-        />
-        <AssetUploader
-          label="Dashboard hero banner"
-          currentPath={settings?.dashboard_hero_storage_path}
-          uploading={uploading === 'dashboard_hero_storage_path'}
-          onChoose={(f) => handleAssetUpload('dashboard_hero_storage_path', 'dashboard-hero', f)}
-        />
+        {ASSETS.map((config) => (
+          <AssetUploader
+            key={config.field}
+            label={config.label}
+            currentPath={settings?.[config.field]}
+            uploading={uploadingField === config.field}
+            onChoose={(f) => handleFileChosen(config, f)}
+          />
+        ))}
 
         <label className="field-label" style={{ marginTop: 18, display: 'block' }}>
           Company name
@@ -117,6 +158,19 @@ export default function SiteSettingsAdminPage() {
       <button className="btn-solid" type="button" onClick={handleSave} disabled={update.isPending}>
         {update.isPending ? 'SAVING…' : 'SAVE CHANGES'}
       </button>
+
+      {cropping && (
+        <ImageCropper
+          title={`Crop ${cropping.config.label}`}
+          imageUrl={cropping.objectUrl}
+          aspectRatio={cropping.config.aspectRatio}
+          frameWidth={cropping.config.frameWidth}
+          helpText={cropping.config.helpText}
+          onCancel={closeCropper}
+          onSave={handleCropSave}
+          saving={!!uploadingField}
+        />
+      )}
     </>
   )
 }
@@ -149,7 +203,15 @@ function AssetUploader({
         <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{label}</div>
         <label className="btn-outline" style={{ display: 'inline-block', cursor: 'pointer' }}>
           {uploading ? 'Uploading…' : 'Replace image'}
-          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => onChoose(e.target.files?.[0])} />
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              onChoose(e.target.files?.[0])
+              e.target.value = ''
+            }}
+          />
         </label>
       </div>
     </div>

@@ -13,7 +13,7 @@ import { useToast } from '../../../components/Toast'
 import Breadcrumb from '../../../components/Breadcrumb'
 import Modal from '../../../components/Modal'
 import PhotoGrid, { type GridPhoto } from '../../../components/PhotoGrid'
-import CoverPhotoCropper from '../../../components/CoverPhotoCropper'
+import ImageCropper from '../../../components/ImageCropper'
 import Icon from '../../../components/Icon'
 import type { PropertyPhoto } from '../../../types/database.types'
 
@@ -240,8 +240,12 @@ export default function PhotosAdminPage() {
       )}
 
       {coverTarget && signed.data?.[coverTarget.storage_path] && (
-        <CoverPhotoCropper
+        <ImageCropper
+          title="Set Cover Photo"
           imageUrl={signed.data[coverTarget.storage_path]}
+          aspectRatio={16 / 9}
+          frameWidth={480}
+          helpText="Drag to reposition, use the slider to zoom. The frame shape is fixed — it matches every place the cover photo displays (grid card, detail hero)."
           onCancel={() => setCoverTarget(null)}
           onSave={handleCropSave}
           saving={cropAndSetCover.isPending}

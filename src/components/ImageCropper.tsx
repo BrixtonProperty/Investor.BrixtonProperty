@@ -1,13 +1,13 @@
 import { useRef, useState } from 'react'
 import Modal from './Modal'
 
-const FRAME_W = 480
-const FRAME_H = 270 // 16:9 -- the one fixed shape used everywhere a cover photo displays
-const OUTPUT_W = 1600
-const OUTPUT_H = 900
-
 interface Props {
+  title: string
   imageUrl: string
+  /** width:height, e.g. 16/9, 1, 3/4 */
+  aspectRatio: number
+  frameWidth?: number
+  helpText?: string
   onCancel: () => void
   onSave: (blob: Blob) => void
   saving?: boolean
@@ -15,7 +15,21 @@ interface Props {
 
 /** Fixed-ratio crop tool: the frame shape never changes, admin can only zoom
  * and pan the photo within it (standard profile-picture-style cropper). */
-export default function CoverPhotoCropper({ imageUrl, onCancel, onSave, saving }: Props) {
+export default function ImageCropper({
+  title,
+  imageUrl,
+  aspectRatio,
+  frameWidth = 440,
+  helpText,
+  onCancel,
+  onSave,
+  saving,
+}: Props) {
+  const frameW = frameWidth
+  const frameH = Math.round(frameWidth / aspectRatio)
+  const outputW = 1600
+  const outputH = Math.round(outputW / aspectRatio)
+
   const [zoom, setZoom] = useState(1)
   const [offset, setOffset] = useState({ x: 0, y: 0 }) // px, relative to frame center
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null)
@@ -28,7 +42,7 @@ export default function CoverPhotoCropper({ imageUrl, onCancel, onSave, saving }
   // Base scale: smallest scale where the image still fully covers the frame ("cover" behaviour).
   function baseScale() {
     if (!naturalSize) return 1
-    return Math.max(FRAME_W / naturalSize.w, FRAME_H / naturalSize.h)
+    return Math.max(frameW / naturalSize.w, frameH / naturalSize.h)
   }
 
   function clampOffset(x: number, y: number, currentZoom: number) {
@@ -36,8 +50,8 @@ export default function CoverPhotoCropper({ imageUrl, onCancel, onSave, saving }
     const scale = baseScale() * currentZoom
     const renderedW = naturalSize.w * scale
     const renderedH = naturalSize.h * scale
-    const maxX = Math.max(0, (renderedW - FRAME_W) / 2)
-    const maxY = Math.max(0, (renderedH - FRAME_H) / 2)
+    const maxX = Math.max(0, (renderedW - frameW) / 2)
+    const maxY = Math.max(0, (renderedH - frameH) / 2)
     return { x: Math.min(maxX, Math.max(-maxX, x)), y: Math.min(maxY, Math.max(-maxY, y)) }
   }
 
@@ -63,8 +77,8 @@ export default function CoverPhotoCropper({ imageUrl, onCancel, onSave, saving }
   async function handleSave() {
     if (!naturalSize) return
     const canvas = document.createElement('canvas')
-    canvas.width = OUTPUT_W
-    canvas.height = OUTPUT_H
+    canvas.width = outputW
+    canvas.height = outputH
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
@@ -76,12 +90,12 @@ export default function CoverPhotoCropper({ imageUrl, onCancel, onSave, saving }
       img.onerror = reject
     })
 
-    const outputScale = OUTPUT_W / FRAME_W
+    const outputScale = outputW / frameW
     const scale = baseScale() * zoom * outputScale
     const renderedW = naturalSize.w * scale
     const renderedH = naturalSize.h * scale
-    const dx = OUTPUT_W / 2 - renderedW / 2 + offset.x * outputScale
-    const dy = OUTPUT_H / 2 - renderedH / 2 + offset.y * outputScale
+    const dx = outputW / 2 - renderedW / 2 + offset.x * outputScale
+    const dy = outputH / 2 - renderedH / 2 + offset.y * outputScale
 
     ctx.drawImage(img, dx, dy, renderedW, renderedH)
     canvas.toBlob(
@@ -89,7 +103,7 @@ export default function CoverPhotoCropper({ imageUrl, onCancel, onSave, saving }
         if (blob) onSave(blob)
       },
       'image/jpeg',
-      0.9,
+      0.92,
     )
   }
 
@@ -99,7 +113,7 @@ export default function CoverPhotoCropper({ imageUrl, onCancel, onSave, saving }
 
   return (
     <Modal
-      title="Set Cover Photo"
+      title={title}
       onClose={onCancel}
       footer={
         <>
@@ -107,19 +121,18 @@ export default function CoverPhotoCropper({ imageUrl, onCancel, onSave, saving }
             Cancel
           </button>
           <button className="btn-solid" type="button" onClick={handleSave} disabled={!naturalSize || saving}>
-            {saving ? 'Saving…' : 'Save Cover Photo'}
+            {saving ? 'Saving…' : 'Save'}
           </button>
         </>
       }
     >
       <p className="form-note" style={{ marginTop: 0 }}>
-        Drag to reposition, use the slider to zoom. The frame shape is fixed — it matches every place the cover
-        photo displays (grid card, detail hero).
+        {helpText ?? 'Drag to reposition, use the slider to zoom. The frame shape is fixed to match where this image displays.'}
       </p>
       <div
         style={{
-          width: FRAME_W,
-          height: FRAME_H,
+          width: frameW,
+          height: frameH,
           margin: '0 auto 16px',
           overflow: 'hidden',
           position: 'relative',
@@ -140,8 +153,8 @@ export default function CoverPhotoCropper({ imageUrl, onCancel, onSave, saving }
           draggable={false}
           style={{
             position: 'absolute',
-            left: FRAME_W / 2 - renderedW / 2 + offset.x,
-            top: FRAME_H / 2 - renderedH / 2 + offset.y,
+            left: frameW / 2 - renderedW / 2 + offset.x,
+            top: frameH / 2 - renderedH / 2 + offset.y,
             width: renderedW || undefined,
             height: renderedH || undefined,
             maxWidth: 'none',
