@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../app/AuthProvider'
+import { MFA_SESSION_FLAG } from '../../app/RequireRole'
 
 export default function MfaChallengePage() {
-  const { refreshAal } = useAuth()
+  const { session, investorUser, refreshAal, refreshInvestorUser } = useAuth()
   const navigate = useNavigate()
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -28,13 +29,18 @@ export default function MfaChallengePage() {
       return
     }
     const verify = await supabase.auth.mfa.verify({ factorId, challengeId: challenge.data.id, code })
-    setSubmitting(false)
     if (verify.error) {
+      setSubmitting(false)
       setError('Incorrect code. Try again.')
       return
     }
-    await refreshAal()
-    navigate('/admin/properties', { replace: true })
+    if (session) {
+      await supabase.from('investor_users').update({ last_mfa_verified_at: new Date().toISOString() }).eq('id', session.user.id)
+    }
+    sessionStorage.setItem(MFA_SESSION_FLAG, '1')
+    await Promise.all([refreshAal(), refreshInvestorUser()])
+    setSubmitting(false)
+    navigate(investorUser?.role === 'admin' ? '/admin/properties' : '/dashboard', { replace: true })
   }
 
   return (

@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../app/AuthProvider'
+import { MFA_SESSION_FLAG } from '../../app/RequireRole'
 
-/** Forced for every admin account before they can reach any /admin/* route (mandatory MFA). */
+/** Forced for every account (admin or investor) before reaching anywhere else -- mandatory MFA for both roles. */
 export default function MfaEnrollPage() {
-  const { refreshAal } = useAuth()
+  const { session, investorUser, refreshAal, refreshInvestorUser } = useAuth()
   const navigate = useNavigate()
   const [qrCode, setQrCode] = useState<string | null>(null)
   const [factorId, setFactorId] = useState<string | null>(null)
@@ -73,13 +74,18 @@ export default function MfaEnrollPage() {
       challengeId: challenge.data.id,
       code,
     })
-    setSubmitting(false)
     if (verify.error) {
+      setSubmitting(false)
       setError('Incorrect code. Check your authenticator app and try again.')
       return
     }
-    await refreshAal()
-    navigate('/admin/properties', { replace: true })
+    if (session) {
+      await supabase.from('investor_users').update({ last_mfa_verified_at: new Date().toISOString() }).eq('id', session.user.id)
+    }
+    sessionStorage.setItem(MFA_SESSION_FLAG, '1')
+    await Promise.all([refreshAal(), refreshInvestorUser()])
+    setSubmitting(false)
+    navigate(investorUser?.role === 'admin' ? '/admin/properties' : '/dashboard', { replace: true })
   }
 
   return (
@@ -89,8 +95,8 @@ export default function MfaEnrollPage() {
           Set up multi-factor authentication
         </h2>
         <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>
-          Admin accounts require MFA. Scan this QR code with an authenticator app (Google Authenticator, 1Password,
-          Authy), then enter the 6-digit code it generates.
+          Every account needs multi-factor authentication set up. Scan this QR code with an authenticator app (Google
+          Authenticator, 1Password, Authy), then enter the 6-digit code it generates.
         </p>
         {error && <div className="login-error">{error}</div>}
         {qrCode && (

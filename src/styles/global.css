@@ -5,7 +5,8 @@ html,body{margin:0;padding:0;}
 body{
   background:var(--bg);
   color:var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+  font-weight: 400;
   min-height:100vh;
 }
 #root{ min-height:100vh; }
@@ -213,7 +214,6 @@ h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; mar
 .login-screen{ display:flex; min-height:100vh; }
 .login-photo{ flex:1.05; background-size:cover; background-position:center; background-color:#ddd; }
 .login-panel{ flex:1; display:flex; flex-direction:column; justify-content:center; padding:60px 90px; position:relative; background:var(--bg); }
-.login-lang{ position:absolute; top:28px; right:36px; font-size:13px; color:var(--text-dim); display:flex; align-items:center; gap:6px; }
 .login-logo{ margin-bottom:30px; }
 .login-logo img{ max-height:72px; max-width:100%; width:auto; height:auto; object-fit:contain; display:block; }
 .login-panel h1{ font-family:'Georgia',serif; font-weight:400; font-size:27px; margin:0 0 8px; }
@@ -344,8 +344,21 @@ h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; mar
 
 .center-screen{ min-height:100vh; display:flex; align-items:center; justify-content:center; }
 
+.mobile-menu-btn{ display:none; border:none; background:none; padding:6px; margin-right:auto; color:var(--text); cursor:pointer; }
+.mobile-nav-backdrop{ display:none; }
+
 @media (max-width: 980px){
+  html, body{ overflow-x:hidden; }
   .sidebar{ display:none; }
+  .main{ padding:18px 16px 40px; min-width:0; }
+  .mobile-menu-btn{ display:block; }
+  .sidebar.mobile-open{
+    display:flex; position:fixed; inset:0 25% 0 0; z-index:200;
+    width:auto; box-shadow:2px 0 24px rgba(0,0,0,.18);
+  }
+  .mobile-nav-backdrop{
+    display:block; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:150;
+  }
   .prop-grid, .detail-grid, .dash-top, .dash-grid{ grid-template-columns:1fr; }
   .upd-property{ flex-direction:column; }
   .upd-thumb{ width:100%; height:160px; }

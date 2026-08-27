@@ -36,7 +36,7 @@ export default function DashboardPage() {
   }, [holdings.data])
 
   const heroUrl = publicAssetUrl(settings?.dashboard_hero_storage_path)
-  const recentUpdates = updates.items.slice(0, 2)
+  const recentUpdates = updates.items.slice(0, 5)
 
   if (properties.isLoading || holdings.isLoading) {
     return <div className="loading-state">Loading your dashboard…</div>
@@ -142,63 +142,34 @@ export default function DashboardPage() {
           })}
         </div>
 
-        <div>
-          <div className="card" style={{ marginBottom: 20 }}>
-            <div className="panel-head">
-              <h4>Latest Investor Update</h4>
-              <button className="view-all" onClick={() => navigate('/updates')} type="button">
-                VIEW ALL →
-              </button>
-            </div>
-            {recentUpdates[0] ? (
-              <div className="update-card-sm">
-                <div
-                  className="thumb-sq"
-                  style={
-                    thumbnails.get(recentUpdates[0].property_id)
-                      ? { backgroundImage: `url('${thumbnails.get(recentUpdates[0].property_id)}')` }
-                      : undefined
-                  }
-                />
-                <div>
-                  <span className="tag-pill">{propertyById.get(recentUpdates[0].property_id)?.name ?? 'UPDATE'}</span>
-                  <div className="ut">{recentUpdates[0].title}</div>
-                  {recentUpdates[0].description && <div className="ud">{recentUpdates[0].description}</div>}
-                  <div className="udate">{fmtDate(recentUpdates[0].date)}</div>
-                </div>
-              </div>
-            ) : (
-              <div className="empty-note">No updates published yet.</div>
-            )}
+        <div className="card">
+          <div className="panel-head">
+            <h4>Latest Investor Updates</h4>
+            <button className="view-all" onClick={() => navigate('/updates')} type="button">
+              VIEW ALL →
+            </button>
           </div>
-          <div className="card">
-            <div className="panel-head">
-              <h4>Recent Updates</h4>
-              <button className="view-all" onClick={() => navigate('/updates')} type="button">
-                VIEW ALL →
-              </button>
-            </div>
-            {recentUpdates[1] ? (
-              <div className="update-card-sm">
-                <div
-                  className="thumb-sq"
-                  style={
-                    thumbnails.get(recentUpdates[1].property_id)
-                      ? { backgroundImage: `url('${thumbnails.get(recentUpdates[1].property_id)}')` }
-                      : undefined
-                  }
-                />
-                <div>
-                  <span className="tag-pill gray">{propertyById.get(recentUpdates[1].property_id)?.name ?? 'UPDATE'}</span>
-                  <div className="ut">{recentUpdates[1].title}</div>
-                  {recentUpdates[1].description && <div className="ud">{recentUpdates[1].description}</div>}
-                  <div className="udate">{fmtDate(recentUpdates[1].date)}</div>
-                </div>
+          {recentUpdates.length === 0 && <div className="empty-note">No updates published yet.</div>}
+          {recentUpdates.map((item, i) => (
+            <button
+              className="update-card-sm"
+              key={item.id}
+              type="button"
+              style={{ width: '100%', cursor: 'pointer', border: 'none', background: 'none', textAlign: 'left' }}
+              onClick={() => navigate('/updates')}
+            >
+              <div
+                className="thumb-sq"
+                style={thumbnails.get(item.property_id) ? { backgroundImage: `url('${thumbnails.get(item.property_id)}')` } : undefined}
+              />
+              <div>
+                <span className={'tag-pill' + (i % 2 === 1 ? ' gray' : '')}>{propertyById.get(item.property_id)?.name ?? 'UPDATE'}</span>
+                <div className="ut">{item.title}</div>
+                {item.description && <div className="ud">{item.description}</div>}
+                <div className="udate">{fmtDate(item.date)}</div>
               </div>
-            ) : (
-              <div className="empty-note">No updates yet.</div>
-            )}
-          </div>
+            </button>
+          ))}
         </div>
       </div>
 

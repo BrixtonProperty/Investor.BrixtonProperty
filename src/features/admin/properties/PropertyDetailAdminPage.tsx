@@ -3,8 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useArchiveProperty, useProperty, useUpdateProperty } from '../../../queries/properties'
 import { usePropertyPhotos, useSignedPhotoUrls } from '../../../queries/propertyPhotos'
 import { useDocuments } from '../../../queries/documents'
+import { useTenants } from '../../../queries/tenants'
 import { useNotices, useCreateNotice, useUpdateNotice, useDeleteNotice } from '../../../queries/notices'
-import { fmtCurrency, fmtDate } from '../../../lib/format'
+import { fmtCurrency, fmtDate, fmtPct } from '../../../lib/format'
 import { useToast } from '../../../components/Toast'
 import StatList from '../../../components/StatList'
 import Modal from '../../../components/Modal'
@@ -19,6 +20,7 @@ type PropertyForm = Pick<
   | 'total_value'
   | 'initial_investment_amount'
   | 'total_equity_invested'
+  | 'loan_value'
   | 'valuation_date'
   | 'type'
   | 'size'
@@ -32,6 +34,7 @@ export default function PropertyDetailAdminPage() {
   const property = useProperty(id)
   const photos = usePropertyPhotos(id)
   const documents = useDocuments(id)
+  const tenants = useTenants(id)
   const notices = useNotices(id)
   const updateProperty = useUpdateProperty()
   const archiveProperty = useArchiveProperty()
@@ -57,6 +60,7 @@ export default function PropertyDetailAdminPage() {
         total_value: p.total_value,
         initial_investment_amount: p.initial_investment_amount,
         total_equity_invested: p.total_equity_invested,
+        loan_value: p.loan_value,
         valuation_date: p.valuation_date,
         type: p.type,
         size: p.size,
@@ -162,6 +166,13 @@ export default function PropertyDetailAdminPage() {
               { icon: '$', label: 'Latest Valuation', value: fmtCurrency(p.total_value), caption: `As at ${fmtDate(p.valuation_date)}` },
               { icon: '$', label: 'Initial Investment Amount', value: p.initial_investment_amount != null ? fmtCurrency(p.initial_investment_amount) : '—' },
               { icon: '$', label: 'Total Equity Invested', value: p.total_equity_invested != null ? fmtCurrency(p.total_equity_invested) : '—' },
+              { icon: '$', label: 'Loan Value', value: p.loan_value != null ? fmtCurrency(p.loan_value) : '—' },
+              {
+                icon: '%',
+                label: 'LVR',
+                value: p.loan_value != null && p.total_value ? fmtPct((p.loan_value / p.total_value) * 100) : '—',
+                caption: 'Loan Value ÷ Latest Valuation',
+              },
               { icon: <Icon name="trendingUp" size={14} />, label: 'Property Type', value: p.type || '—' },
               { icon: <Icon name="pin" size={14} />, label: 'Location', value: p.location },
               { icon: <Icon name="building" size={14} />, label: 'Net Lettable Area (NLA)', value: p.size || '—' },
@@ -214,6 +225,21 @@ export default function PropertyDetailAdminPage() {
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 22 }}>
+        <div className="section-label">
+          TENANTS
+          <button className="field-edit-btn" onClick={() => navigate(`/admin/properties/${id}/tenants`)} type="button">
+            MANAGE
+          </button>
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text-faint)', padding: '4px 0 12px' }}>
+          {(tenants.data ?? []).length === 0 ? 'No tenants added yet.' : `${tenants.data?.length} tenant(s) on this property.`}
+        </div>
+        <button className="btn-outline" style={{ width: '100%' }} onClick={() => navigate(`/admin/properties/${id}/tenants`)}>
+          MANAGE TENANTS
+        </button>
       </div>
 
       <div className="card" style={{ marginTop: 22 }}>
@@ -294,6 +320,16 @@ export default function PropertyDetailAdminPage() {
               placeholder="Total equity invested into the property at purchase"
               value={form.total_equity_invested ?? ''}
               onChange={(e) => setForm({ ...form, total_equity_invested: e.target.value ? Number(e.target.value) : null })}
+            />
+            <label className="field-label">Loan Value ($)</label>
+            <input
+              className="form-input"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Outstanding loan balance against this property"
+              value={form.loan_value ?? ''}
+              onChange={(e) => setForm({ ...form, loan_value: e.target.value ? Number(e.target.value) : null })}
             />
             <label className="field-label">Valuation Date</label>
             <input

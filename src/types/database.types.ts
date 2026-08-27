@@ -32,6 +32,7 @@ export type InvestorUser = {
   invite_status: InviteStatus
   invite_link: string | null
   invite_generated_at: string | null
+  last_mfa_verified_at: string | null
   created_at: string
   updated_at: string
 }
@@ -45,11 +46,23 @@ export type Property = {
   valuation_date: string
   initial_investment_amount: number | null
   total_equity_invested: number | null
+  loan_value: number | null
   type: string
   size: string | null
   occupancy: string | null
   year_built: number | null
   is_archived: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type PropertyTenant = {
+  id: string
+  property_id: string
+  name: string
+  lease_term: string | null
+  lease_expiry: string | null
+  description: string
   created_at: string
   updated_at: string
 }
@@ -146,6 +159,7 @@ export type Database = {
       document_categories: TableDef<DocumentCategory>
       documents: TableDef<DocumentRow>
       notices: TableDef<Notice>
+      property_tenants: TableDef<PropertyTenant>
       site_settings: TableDef<SiteSettings>
     }
     Views: {

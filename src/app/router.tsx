@@ -14,6 +14,7 @@ import InvestmentsPage from '../features/investments/InvestmentsPage'
 import PropertyDetailPage from '../features/investments/PropertyDetailPage'
 import PhotosPage from '../features/investments/PhotosPage'
 import DocumentsPage from '../features/investments/DocumentsPage'
+import TenantsPage from '../features/investments/TenantsPage'
 import UpdatesPage from '../features/updates/UpdatesPage'
 import ProfilePage from '../features/profile/ProfilePage'
 import ContactPage from '../features/contact/ContactPage'
@@ -22,6 +23,7 @@ import PropertiesAdminPage from '../features/admin/properties/PropertiesAdminPag
 import PropertyDetailAdminPage from '../features/admin/properties/PropertyDetailAdminPage'
 import PhotosAdminPage from '../features/admin/properties/PhotosAdminPage'
 import DocumentsAdminPage from '../features/admin/properties/DocumentsAdminPage'
+import TenantsAdminPage from '../features/admin/properties/TenantsAdminPage'
 import InvestorsAdminPage from '../features/admin/investors/InvestorsAdminPage'
 import InvestorDetailAdminPage from '../features/admin/investors/InvestorDetailAdminPage'
 import DocumentCategoriesAdminPage from '../features/admin/documentCategories/DocumentCategoriesAdminPage'
@@ -56,6 +58,7 @@ export const router = createBrowserRouter([
               { path: '/investments/:id', element: <PropertyDetailPage /> },
               { path: '/investments/:id/photos', element: <PhotosPage /> },
               { path: '/investments/:id/documents', element: <DocumentsPage /> },
+              { path: '/investments/:id/tenants', element: <TenantsPage /> },
               { path: '/updates', element: <UpdatesPage /> },
               { path: '/profile', element: <ProfilePage /> },
               { path: '/contact', element: <ContactPage /> },
@@ -73,6 +76,7 @@ export const router = createBrowserRouter([
               { path: '/admin/properties/:id', element: <PropertyDetailAdminPage /> },
               { path: '/admin/properties/:id/photos', element: <PhotosAdminPage /> },
               { path: '/admin/properties/:id/documents', element: <DocumentsAdminPage /> },
+              { path: '/admin/properties/:id/tenants', element: <TenantsAdminPage /> },
               { path: '/admin/investors', element: <InvestorsAdminPage /> },
               { path: '/admin/investors/:id', element: <InvestorDetailAdminPage /> },
               { path: '/admin/document-categories', element: <DocumentCategoriesAdminPage /> },

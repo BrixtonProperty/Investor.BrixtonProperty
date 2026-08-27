@@ -27,6 +27,7 @@ const paths: Record<string, string> = {
   star: 'M12 3.5 14.8 9.2l6.3.9-4.6 4.4 1.1 6.2L12 17.8l-5.6 2.9 1.1-6.2-4.6-4.4 6.3-.9Z',
   upload: 'M12 16V4M7 9l5-5 5 5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3',
   image: 'M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1ZM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM4 17l5-5 3.5 3.5L16.5 11 21 15.5',
+  menu: 'M4 6h16M4 12h16M4 18h16',
 }
 
 export default function Icon({

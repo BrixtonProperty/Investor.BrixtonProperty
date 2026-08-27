@@ -3,6 +3,7 @@ import { useProperty } from '../../queries/properties'
 import { useHoldingForProperty } from '../../queries/investorHoldings'
 import { usePropertyPhotos, useSignedPhotoUrls } from '../../queries/propertyPhotos'
 import { useDocuments } from '../../queries/documents'
+import { useTenants } from '../../queries/tenants'
 import { fmtCurrency, fmtDate, fmtPct } from '../../lib/format'
 import { openDocument } from '../../lib/signedUrl'
 import StatList from '../../components/StatList'
@@ -15,6 +16,7 @@ export default function PropertyDetailPage() {
   const holding = useHoldingForProperty(id)
   const photos = usePropertyPhotos(id)
   const documents = useDocuments(id)
+  const tenants = useTenants(id)
   const signed = useSignedPhotoUrls((photos.data ?? []).map((p) => p.storage_path))
 
   if (property.isLoading) return <div className="loading-state">Loading property…</div>
@@ -61,6 +63,12 @@ export default function PropertyDetailPage() {
                 caption: `As at ${fmtDate(p.valuation_date)}`,
               },
               { icon: '%', label: 'Your Ownership', value: holding.data ? fmtPct(holding.data.ownership_pct) : '—' },
+              {
+                icon: '%',
+                label: 'LVR',
+                value: p.loan_value != null && p.total_value ? fmtPct((p.loan_value / p.total_value) * 100) : '—',
+                caption: 'Loan Value ÷ Latest Valuation',
+              },
               { icon: <Icon name="trendingUp" size={14} />, label: 'Property Type', value: p.type || '—' },
               { icon: <Icon name="pin" size={14} />, label: 'Location', value: p.location },
               { icon: <Icon name="building" size={14} />, label: 'Net Lettable Area (NLA)', value: p.size || '—' },
@@ -112,6 +120,16 @@ export default function PropertyDetailPage() {
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 22 }}>
+        <div className="section-label">TENANTS</div>
+        <div style={{ fontSize: 12, color: 'var(--text-faint)', padding: '4px 0 12px' }}>
+          {(tenants.data ?? []).length === 0 ? 'No tenants listed yet.' : `${tenants.data?.length} tenant(s) on this property.`}
+        </div>
+        <button className="btn-outline" style={{ width: '100%' }} onClick={() => navigate(`/investments/${p.id}/tenants`)}>
+          VIEW TENANTS
+        </button>
       </div>
 
       <div className="card assist" style={{ marginTop: 22 }}>

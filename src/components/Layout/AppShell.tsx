@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../app/AuthProvider'
 import { useSiteSettings } from '../../queries/siteSettings'
@@ -46,6 +46,7 @@ export default function AppShell() {
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   const isAdmin = investorUser?.role === 'admin'
   const isPortfolioMode = isAdmin && location.pathname.startsWith('/admin/portfolio')
@@ -54,6 +55,12 @@ export default function AppShell() {
   const logoUrl = publicAssetUrl(settings?.logo_storage_path)
   const badgeUrl = publicAssetUrl(settings?.badge_storage_path)
 
+  // Close the mobile drawer on every navigation, not just an explicit tap on
+  // a nav item -- covers back/forward, links from within a page, etc.
+  useEffect(() => {
+    setMobileNavOpen(false)
+  }, [location.pathname])
+
   async function handleLogout() {
     await supabase.auth.signOut()
     navigate('/login', { replace: true })
@@ -61,7 +68,8 @@ export default function AppShell() {
 
   return (
     <div className="app">
-      <div className="sidebar">
+      {mobileNavOpen && <div className="mobile-nav-backdrop" onClick={() => setMobileNavOpen(false)} />}
+      <div className={'sidebar' + (mobileNavOpen ? ' mobile-open' : '')}>
         {logoUrl ? (
           <img className="brand-logo" src={logoUrl} alt={settings?.company_name ?? 'Brixton Property'} />
         ) : (
@@ -114,6 +122,9 @@ export default function AppShell() {
 
       <div className="main">
         <div className="topbar">
+          <button className="mobile-menu-btn" onClick={() => setMobileNavOpen((v) => !v)} type="button" aria-label="Open menu">
+            <Icon name="menu" size={20} />
+          </button>
           <div className="topbar-badges">
             {isAdmin ? (
               <div className="mode-toggle">

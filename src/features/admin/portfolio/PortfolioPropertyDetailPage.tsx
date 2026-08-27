@@ -2,7 +2,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useProperty } from '../../../queries/properties'
 import { usePropertyPhotos, useSignedPhotoUrls } from '../../../queries/propertyPhotos'
 import { useDocuments } from '../../../queries/documents'
-import { fmtCurrency, fmtDate } from '../../../lib/format'
+import { useTenants } from '../../../queries/tenants'
+import { fmtCurrency, fmtDate, fmtPct } from '../../../lib/format'
 import { openDocument } from '../../../lib/signedUrl'
 import StatList from '../../../components/StatList'
 import Icon from '../../../components/Icon'
@@ -14,6 +15,7 @@ export default function PortfolioPropertyDetailPage() {
   const property = useProperty(id)
   const photos = usePropertyPhotos(id)
   const documents = useDocuments(id)
+  const tenants = useTenants(id)
   const signed = useSignedPhotoUrls((photos.data ?? []).map((p) => p.storage_path))
 
   if (property.isLoading) return <div className="loading-state">Loading property…</div>
@@ -68,6 +70,13 @@ export default function PortfolioPropertyDetailPage() {
                 icon: '$',
                 label: 'Total Equity Invested',
                 value: p.total_equity_invested != null ? fmtCurrency(p.total_equity_invested) : '—',
+              },
+              { icon: '$', label: 'Loan Value', value: p.loan_value != null ? fmtCurrency(p.loan_value) : '—' },
+              {
+                icon: '%',
+                label: 'LVR',
+                value: p.loan_value != null && p.total_value ? fmtPct((p.loan_value / p.total_value) * 100) : '—',
+                caption: 'Loan Value ÷ Latest Valuation',
               },
               { icon: <Icon name="trendingUp" size={14} />, label: 'Property Type', value: p.type || '—' },
               { icon: <Icon name="pin" size={14} />, label: 'Location', value: p.location },
@@ -127,6 +136,13 @@ export default function PortfolioPropertyDetailPage() {
               VIEW ALL DOCUMENTS
             </button>
           </div>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 22 }}>
+        <div className="section-label">TENANTS</div>
+        <div style={{ fontSize: 12, color: 'var(--text-faint)', padding: '4px 0 12px' }}>
+          {(tenants.data ?? []).length === 0 ? 'No tenants listed yet.' : `${tenants.data?.length} tenant(s) on this property.`}
         </div>
       </div>
 
