@@ -10,7 +10,10 @@ body{
   min-height:100vh;
 }
 #root{ min-height:100vh; }
-.serif{ font-family: 'Georgia', 'Iowan Old Style', serif; }
+/* Named for the prototype's original serif headings -- kept as-is to avoid
+   touching the ~30 files that reference it, but it's Montserrat Medium now,
+   matching brixtonproperty.co.nz's own heading treatment. */
+.serif{ font-family: 'Montserrat', sans-serif; font-weight: 500; }
 a{color:inherit;text-decoration:none;}
 button{font-family:inherit;}
 input, select, textarea{ font-family:inherit; }
@@ -63,7 +66,7 @@ input, select, textarea{ font-family:inherit; }
 .user-menu button{ display:block; width:100%; text-align:left; padding:11px 16px; border:none; background:none; font-size:13px; color:var(--text); cursor:pointer; }
 .user-menu button:hover{ background:var(--panel-2); }
 
-h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; margin:0 0 6px; }
+h1.page-title{ font-family:'Montserrat',sans-serif; font-weight:500; font-size:32px; margin:0 0 6px; color:var(--orange); }
 .page-sub{ color:var(--text-dim); font-size:14px; margin-bottom:26px; }
 .page-head-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:20px; }
 
@@ -183,7 +186,7 @@ h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; mar
 .upd-property{ display:flex; gap:18px; margin-bottom:18px; padding:0; overflow:hidden; }
 .upd-thumb{ width:220px; flex-shrink:0; background:#ddd center/cover; }
 .upd-info{ padding:20px 0 20px 20px; width:220px; flex-shrink:0; }
-.upd-info h3{ font-family:'Georgia',serif; font-weight:400; font-size:19px; margin:0 0 3px; }
+.upd-info h3{ font-family:'Montserrat',sans-serif; font-weight:500; font-size:19px; margin:0 0 3px; }
 .upd-info .loc{ font-size:12px; color:var(--text-faint); margin-bottom:14px; }
 .upd-info .ustat{ font-size:11px; color:var(--text-faint); margin-bottom:2px; }
 .upd-info .uval{ font-size:14px; font-weight:600; margin-bottom:10px; }
@@ -216,7 +219,7 @@ h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; mar
 .login-panel{ flex:1; display:flex; flex-direction:column; justify-content:center; padding:60px 90px; position:relative; background:var(--bg); }
 .login-logo{ margin-bottom:30px; }
 .login-logo img{ max-height:72px; max-width:100%; width:auto; height:auto; object-fit:contain; display:block; }
-.login-panel h1{ font-family:'Georgia',serif; font-weight:400; font-size:27px; margin:0 0 8px; }
+.login-panel h1{ font-family:'Montserrat',sans-serif; font-weight:500; font-size:27px; margin:0 0 8px; }
 .login-panel .sub-text{ color:var(--text-dim); font-size:14px; margin-bottom:30px; }
 .field-label{ font-size:13px; margin-bottom:8px; display:block; font-weight:600; }
 .field-input{ position:relative; margin-bottom:20px; }
@@ -333,7 +336,7 @@ h1.page-title{ font-family:'Georgia',serif; font-weight:400; font-size:32px; mar
 .modal-backdrop{ position:fixed; inset:0; background:rgba(10,10,10,.4); z-index:1500; display:flex; align-items:center; justify-content:center; padding:20px; }
 .modal{ background:var(--panel); border-radius:12px; width:100%; max-width:520px; max-height:88vh; overflow-y:auto; }
 .modal-header{ display:flex; justify-content:space-between; align-items:center; padding:20px 24px; border-bottom:1px solid var(--border); }
-.modal-header h3{ margin:0; font-size:17px; font-weight:600; font-family:'Georgia',serif; }
+.modal-header h3{ margin:0; font-size:17px; font-weight:500; font-family:'Montserrat',sans-serif; }
 .modal-close{ background:none; border:none; font-size:18px; cursor:pointer; color:var(--text-dim); }
 .modal-body{ padding:22px 24px; }
 .modal-footer{ display:flex; justify-content:flex-end; gap:10px; padding:16px 24px 22px; }
