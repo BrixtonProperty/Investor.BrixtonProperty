@@ -56,20 +56,19 @@ export function useHoldingsForAccount(accountId: string | undefined) {
     enabled: !!accountId,
     queryFn: async () =>
       unwrap(
-        await supabase.from('investor_properties').select('*, properties(name, location)').eq('investor_account_id', accountId!),
-      ) as (InvestorProperty & { properties: { name: string; location: string } })[],
+        await supabase
+          .from('investor_properties')
+          .select('*, properties(name, location, total_equity_invested)')
+          .eq('investor_account_id', accountId!),
+      ) as (InvestorProperty & { properties: { name: string; location: string; total_equity_invested: number | null } })[],
   })
 }
 
 export function useAssignHolding() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (values: {
-      investor_account_id: string
-      property_id: string
-      ownership_pct: number
-      invested_amount: number
-    }) => unwrap(await supabase.from('investor_properties').insert(values).select().single()),
+    mutationFn: async (values: { investor_account_id: string; property_id: string; invested_amount: number }) =>
+      unwrap(await supabase.from('investor_properties').insert(values).select().single()),
     onSuccess: (_d, vars) => qc.invalidateQueries({ queryKey: [IP_KEY, vars.investor_account_id] }),
   })
 }

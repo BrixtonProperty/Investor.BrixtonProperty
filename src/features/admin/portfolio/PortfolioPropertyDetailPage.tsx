@@ -3,7 +3,7 @@ import { useProperty } from '../../../queries/properties'
 import { usePropertyPhotos, useSignedPhotoUrls } from '../../../queries/propertyPhotos'
 import { useDocuments } from '../../../queries/documents'
 import { useTenants } from '../../../queries/tenants'
-import { fmtCurrency, fmtDate, fmtPct } from '../../../lib/format'
+import { fmtCurrency, fmtDate, fmtPct, fmtLeaseTerm } from '../../../lib/format'
 import { openDocument } from '../../../lib/signedUrl'
 import StatList from '../../../components/StatList'
 import Icon from '../../../components/Icon'
@@ -141,9 +141,29 @@ export default function PortfolioPropertyDetailPage() {
 
       <div className="card" style={{ marginTop: 22 }}>
         <div className="section-label">TENANTS</div>
-        <div style={{ fontSize: 12, color: 'var(--text-faint)', padding: '4px 0 12px' }}>
-          {(tenants.data ?? []).length === 0 ? 'No tenants listed yet.' : `${tenants.data?.length} tenant(s) on this property.`}
-        </div>
+        {(tenants.data ?? []).length === 0 && (
+          <div style={{ fontSize: 12, color: 'var(--text-faint)', padding: '4px 0 12px' }}>No tenants listed yet.</div>
+        )}
+        {(tenants.data ?? []).map((t) => (
+          <div key={t.id} style={{ padding: '12px 0', borderTop: '1px solid var(--border)' }}>
+            <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 6 }}>{t.name}</div>
+            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: t.description ? 6 : 0 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Lease Term</div>
+                <div style={{ fontSize: 13 }}>{fmtLeaseTerm(t.lease_term)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Lease Expiry</div>
+                <div style={{ fontSize: 13 }}>{fmtDate(t.lease_expiry)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Right of Renewal</div>
+                <div style={{ fontSize: 13 }}>{t.right_of_renewal || '—'}</div>
+              </div>
+            </div>
+            {t.description && <div style={{ fontSize: 12, color: 'var(--text-dim)', lineHeight: 1.5 }}>{t.description}</div>}
+          </div>
+        ))}
       </div>
 
       <div className="card assist" style={{ marginTop: 22 }}>

@@ -2,14 +2,14 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useProperty } from '../../../queries/properties'
 import { useTenants, useCreateTenant, useUpdateTenant, useDeleteTenant } from '../../../queries/tenants'
-import { fmtDate } from '../../../lib/format'
+import { fmtDate, fmtLeaseTerm } from '../../../lib/format'
 import { useToast } from '../../../components/Toast'
 import Breadcrumb from '../../../components/Breadcrumb'
 import Modal from '../../../components/Modal'
 import Icon from '../../../components/Icon'
 import type { PropertyTenant } from '../../../types/database.types'
 
-const emptyForm = { name: '', lease_term: '', lease_expiry: '', description: '' }
+const emptyForm = { name: '', lease_term: '', lease_expiry: '', right_of_renewal: '', description: '' }
 
 export default function TenantsAdminPage() {
   const { id } = useParams<{ id: string }>()
@@ -38,6 +38,7 @@ export default function TenantsAdminPage() {
       name: t.name,
       lease_term: t.lease_term ?? '',
       lease_expiry: t.lease_expiry ?? '',
+      right_of_renewal: t.right_of_renewal ?? '',
       description: t.description,
     })
     setEditing(t)
@@ -52,6 +53,7 @@ export default function TenantsAdminPage() {
         name: form.name,
         lease_term: form.lease_term || null,
         lease_expiry: form.lease_expiry || null,
+        right_of_renewal: form.right_of_renewal || null,
         description: form.description,
       })
       setAddOpen(false)
@@ -71,6 +73,7 @@ export default function TenantsAdminPage() {
           name: form.name,
           lease_term: form.lease_term || null,
           lease_expiry: form.lease_expiry || null,
+          right_of_renewal: form.right_of_renewal || null,
           description: form.description,
         },
       })
@@ -107,21 +110,11 @@ export default function TenantsAdminPage() {
         </button>
       </div>
 
-      <div className="card">
-        <div className="admin-table-head" style={{ gridTemplateColumns: '1.2fr 1fr 1fr 1.6fr 60px' }}>
-          <div>Tenant</div>
-          <div>Lease Term</div>
-          <div>Lease Expiry</div>
-          <div>Description</div>
-          <div></div>
-        </div>
-        {(tenants.data ?? []).length === 0 && <div className="empty-state">No tenants yet — add the first one above.</div>}
-        {(tenants.data ?? []).map((t) => (
-          <div className="admin-table-row" style={{ gridTemplateColumns: '1.2fr 1fr 1fr 1.6fr 60px', cursor: 'default' }} key={t.id}>
-            <div style={{ fontWeight: 600 }}>{t.name}</div>
-            <div>{t.lease_term || '—'}</div>
-            <div>{fmtDate(t.lease_expiry)}</div>
-            <div style={{ color: 'var(--text-dim)', fontSize: 13 }}>{t.description || '—'}</div>
+      {(tenants.data ?? []).length === 0 && <div className="empty-state">No tenants yet — add the first one above.</div>}
+      {(tenants.data ?? []).map((t) => (
+        <div className="card" style={{ marginBottom: 16, padding: '18px 22px' }} key={t.id}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+            <div style={{ fontWeight: 600, fontSize: 16 }}>{t.name}</div>
             <div style={{ display: 'flex', gap: 4 }}>
               <button className="btn-icon" onClick={() => openEdit(t)} type="button" aria-label="Edit tenant">
                 <Icon name="edit" size={13} />
@@ -131,8 +124,23 @@ export default function TenantsAdminPage() {
               </button>
             </div>
           </div>
-        ))}
-      </div>
+          <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap', marginBottom: t.description ? 10 : 0 }}>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Lease Term</div>
+              <div style={{ fontSize: 13 }}>{fmtLeaseTerm(t.lease_term)}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Lease Expiry</div>
+              <div style={{ fontSize: 13 }}>{fmtDate(t.lease_expiry)}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Right of Renewal</div>
+              <div style={{ fontSize: 13 }}>{t.right_of_renewal || '—'}</div>
+            </div>
+          </div>
+          {t.description && <div style={{ fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.5 }}>{t.description}</div>}
+        </div>
+      ))}
 
       {(addOpen || editing) && (
         <Modal
@@ -162,10 +170,13 @@ export default function TenantsAdminPage() {
           <form id="tenant-form" onSubmit={editing ? handleSaveEdit : handleAdd}>
             <label className="field-label">Tenant name</label>
             <input className="form-input" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            <label className="field-label">Lease term</label>
+            <label className="field-label">Lease term (years)</label>
             <input
               className="form-input"
-              placeholder="e.g. 6 years, 2 x 3 year rights of renewal"
+              type="number"
+              min="0"
+              step="1"
+              placeholder="e.g. 6"
               value={form.lease_term}
               onChange={(e) => setForm({ ...form, lease_term: e.target.value })}
             />
@@ -175,6 +186,13 @@ export default function TenantsAdminPage() {
               type="date"
               value={form.lease_expiry}
               onChange={(e) => setForm({ ...form, lease_expiry: e.target.value })}
+            />
+            <label className="field-label">Right of renewal</label>
+            <input
+              className="form-input"
+              placeholder="e.g. 2 x 3 year rights of renewal"
+              value={form.right_of_renewal}
+              onChange={(e) => setForm({ ...form, right_of_renewal: e.target.value })}
             />
             <label className="field-label">Description</label>
             <textarea

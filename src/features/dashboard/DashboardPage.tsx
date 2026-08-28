@@ -30,7 +30,7 @@ export default function DashboardPage() {
     return {
       totalInvestments: rows.length,
       totalInvested: rows.reduce((sum, r) => sum + r.invested_amount, 0),
-      totalAssetValue: rows.reduce((sum, r) => sum + r.current_asset_value, 0),
+      totalAssetValue: rows.reduce((sum, r) => sum + (r.current_asset_value ?? 0), 0),
       asAt: rows.reduce<string | null>((latest, r) => (!latest || r.valuation_date > latest ? r.valuation_date : latest), null),
     }
   }, [holdings.data])

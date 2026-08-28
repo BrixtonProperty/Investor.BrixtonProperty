@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { useProperty } from '../../queries/properties'
 import { useTenants } from '../../queries/tenants'
-import { fmtDate } from '../../lib/format'
+import { fmtDate, fmtLeaseTerm } from '../../lib/format'
 import Breadcrumb from '../../components/Breadcrumb'
 
 export default function TenantsPage() {
@@ -26,23 +26,27 @@ export default function TenantsPage() {
       <h1 className="page-title serif">Tenants</h1>
       <div className="page-sub">Current tenants at {p.name}.</div>
 
-      <div className="card">
-        <div className="admin-table-head" style={{ gridTemplateColumns: '1.2fr 1fr 1fr 1.6fr' }}>
-          <div>Tenant</div>
-          <div>Lease Term</div>
-          <div>Lease Expiry</div>
-          <div>Description</div>
-        </div>
-        {(tenants.data ?? []).length === 0 && <div className="empty-state">No tenants listed yet.</div>}
-        {(tenants.data ?? []).map((t) => (
-          <div className="admin-table-row" style={{ gridTemplateColumns: '1.2fr 1fr 1fr 1.6fr', cursor: 'default' }} key={t.id}>
-            <div style={{ fontWeight: 600 }}>{t.name}</div>
-            <div>{t.lease_term || '—'}</div>
-            <div>{fmtDate(t.lease_expiry)}</div>
-            <div style={{ color: 'var(--text-dim)', fontSize: 13 }}>{t.description || '—'}</div>
+      {(tenants.data ?? []).length === 0 && <div className="empty-state">No tenants listed yet.</div>}
+      {(tenants.data ?? []).map((t) => (
+        <div className="card" style={{ marginBottom: 16, padding: '18px 22px' }} key={t.id}>
+          <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 10 }}>{t.name}</div>
+          <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap', marginBottom: t.description ? 10 : 0 }}>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Lease Term</div>
+              <div style={{ fontSize: 13 }}>{fmtLeaseTerm(t.lease_term)}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Lease Expiry</div>
+              <div style={{ fontSize: 13 }}>{fmtDate(t.lease_expiry)}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Right of Renewal</div>
+              <div style={{ fontSize: 13 }}>{t.right_of_renewal || '—'}</div>
+            </div>
           </div>
-        ))}
-      </div>
+          {t.description && <div style={{ fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.5 }}>{t.description}</div>}
+        </div>
+      ))}
     </>
   )
 }

@@ -1,4 +1,5 @@
-export function fmtCurrency(n: number): string {
+export function fmtCurrency(n: number | null | undefined): string {
+  if (n == null) return '—'
   return '$' + n.toLocaleString('en-NZ')
 }
 
@@ -14,8 +15,17 @@ export function fmtMonthYear(iso: string): string {
   return d.toLocaleDateString('en-NZ', { month: 'long', year: 'numeric' })
 }
 
-export function fmtPct(n: number): string {
+export function fmtPct(n: number | null | undefined): string {
+  if (n == null) return '—'
   return `${n.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
+}
+
+/** "9" -> "9 (years)"; anything not a bare number (e.g. "15 Years", free text
+ * from before this convention) is shown as entered rather than mangled. */
+export function fmtLeaseTerm(term: string | null): string {
+  if (!term) return '—'
+  const trimmed = term.trim()
+  return /^\d+(\.\d+)?$/.test(trimmed) ? `${trimmed} (years)` : trimmed
 }
 
 export function fmtBytes(bytes: number | null | undefined): string {

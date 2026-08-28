@@ -62,6 +62,7 @@ export type PropertyTenant = {
   name: string
   lease_term: string | null
   lease_expiry: string | null
+  right_of_renewal: string | null
   description: string
   created_at: string
   updated_at: string
@@ -82,7 +83,6 @@ export type InvestorProperty = {
   id: string
   investor_account_id: string
   property_id: string
-  ownership_pct: number
   invested_amount: number
   created_at: string
   updated_at: string
@@ -92,11 +92,13 @@ export type InvestorHolding = {
   investor_property_id: string
   investor_account_id: string
   property_id: string
-  ownership_pct: number
+  /** Derived (Initial Investment ÷ Total Equity Invested) -- null until the
+   * property's Total Equity Invested is set. */
+  ownership_pct: number | null
   invested_amount: number
   total_value: number
   valuation_date: string
-  current_asset_value: number
+  current_asset_value: number | null
 }
 
 export type DocumentCategory = {

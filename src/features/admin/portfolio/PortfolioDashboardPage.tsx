@@ -31,7 +31,7 @@ export default function PortfolioDashboardPage() {
   }, [properties.data])
 
   const heroUrl = publicAssetUrl(settings?.dashboard_hero_storage_path)
-  const recentUpdates = updates.items.slice(0, 2)
+  const recentUpdates = updates.items.slice(0, 5)
   const propertyById = new Map((properties.data ?? []).map((p) => [p.id, p]))
 
   if (properties.isLoading) return <div className="loading-state">Loading portfolio…</div>
@@ -117,30 +117,34 @@ export default function PortfolioDashboardPage() {
           ))}
         </div>
 
-        <div>
-          <div className="card">
-            <div className="panel-head">
-              <h4>Recent Updates</h4>
-              <button className="view-all" onClick={() => navigate('/admin/portfolio/updates')} type="button">
-                VIEW ALL →
-              </button>
-            </div>
-            {recentUpdates.length === 0 && <div className="empty-note">No updates published yet.</div>}
-            {recentUpdates.map((u) => (
-              <div className="update-card-sm" key={u.id}>
-                <div
-                  className="thumb-sq"
-                  style={thumbnails.get(u.property_id) ? { backgroundImage: `url('${thumbnails.get(u.property_id)}')` } : undefined}
-                />
-                <div>
-                  <span className="tag-pill">{propertyById.get(u.property_id)?.name ?? 'UPDATE'}</span>
-                  <div className="ut">{u.title}</div>
-                  {u.description && <div className="ud">{u.description}</div>}
-                  <div className="udate">{fmtDate(u.date)}</div>
-                </div>
-              </div>
-            ))}
+        <div className="card">
+          <div className="panel-head">
+            <h4>Latest Investor Updates</h4>
+            <button className="view-all" onClick={() => navigate('/admin/portfolio/updates')} type="button">
+              VIEW ALL →
+            </button>
           </div>
+          {recentUpdates.length === 0 && <div className="empty-note">No updates published yet.</div>}
+          {recentUpdates.map((u, i) => (
+            <button
+              className="update-card-sm"
+              key={u.id}
+              type="button"
+              style={{ width: '100%', cursor: 'pointer', border: 'none', background: 'none', textAlign: 'left' }}
+              onClick={() => navigate('/admin/portfolio/updates')}
+            >
+              <div
+                className="thumb-sq"
+                style={thumbnails.get(u.property_id) ? { backgroundImage: `url('${thumbnails.get(u.property_id)}')` } : undefined}
+              />
+              <div>
+                <span className={'tag-pill' + (i % 2 === 1 ? ' gray' : '')}>{propertyById.get(u.property_id)?.name ?? 'UPDATE'}</span>
+                <div className="ut">{u.title}</div>
+                {u.description && <div className="ud">{u.description}</div>}
+                <div className="udate">{fmtDate(u.date)}</div>
+              </div>
+            </button>
+          ))}
         </div>
       </div>
     </>

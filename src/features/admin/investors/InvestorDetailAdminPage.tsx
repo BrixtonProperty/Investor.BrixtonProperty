@@ -52,7 +52,7 @@ export default function InvestorDetailAdminPage() {
   }, [account.data])
 
   const [assignOpen, setAssignOpen] = useState(false)
-  const [assignForm, setAssignForm] = useState({ propertyId: '', ownershipPct: '', investedAmount: '' })
+  const [assignForm, setAssignForm] = useState({ propertyId: '', investedAmount: '' })
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [loginForm, setLoginForm] = useState({ name: '', email: '' })
   const [inviteLink, setInviteLink] = useState<string | null>(null)
@@ -80,11 +80,10 @@ export default function InvestorDetailAdminPage() {
       await assignHolding.mutateAsync({
         investor_account_id: id!,
         property_id: assignForm.propertyId,
-        ownership_pct: Number(assignForm.ownershipPct),
         invested_amount: Number(assignForm.investedAmount),
       })
       setAssignOpen(false)
-      setAssignForm({ propertyId: '', ownershipPct: '', investedAmount: '' })
+      setAssignForm({ propertyId: '', investedAmount: '' })
       toast.show('Holding assigned.')
     } catch (err) {
       toast.show(err instanceof Error ? err.message : 'Could not assign holding.', 'error')
@@ -309,17 +308,6 @@ export default function InvestorDetailAdminPage() {
                 </option>
               ))}
             </select>
-            <label className="field-label">Ownership %</label>
-            <input
-              className="form-input"
-              type="number"
-              min="0.001"
-              max="100"
-              step="0.001"
-              required
-              value={assignForm.ownershipPct}
-              onChange={(e) => setAssignForm({ ...assignForm, ownershipPct: e.target.value })}
-            />
             <label className="field-label">Initial Investment ($)</label>
             <input
               className="form-input"
@@ -330,6 +318,9 @@ export default function InvestorDetailAdminPage() {
               value={assignForm.investedAmount}
               onChange={(e) => setAssignForm({ ...assignForm, investedAmount: e.target.value })}
             />
+            <p className="form-note">
+              Ownership % is calculated automatically from this amount and the property's Total Equity Invested.
+            </p>
           </form>
         </Modal>
       )}
@@ -391,19 +382,26 @@ function HoldingRow({
   onSave,
   onRemove,
 }: {
-  holding: { id: string; property_id: string; ownership_pct: number; invested_amount: number; properties: { name: string; location: string } }
+  holding: {
+    id: string
+    property_id: string
+    invested_amount: number
+    properties: { name: string; location: string; total_equity_invested: number | null }
+  }
   accountId: string
-  onSave: (values: { ownership_pct: number; invested_amount: number }) => Promise<unknown>
+  onSave: (values: { invested_amount: number }) => Promise<unknown>
   onRemove: () => void
 }) {
   const [editing, setEditing] = useState(false)
-  const [ownership, setOwnership] = useState(String(holding.ownership_pct))
   const [invested, setInvested] = useState(String(holding.invested_amount))
   const toast = useToast()
 
+  const totalEquity = holding.properties?.total_equity_invested
+  const ownershipPct = totalEquity ? (holding.invested_amount / totalEquity) * 100 : null
+
   async function save() {
     try {
-      await onSave({ ownership_pct: Number(ownership), invested_amount: Number(invested) })
+      await onSave({ invested_amount: Number(invested) })
       setEditing(false)
       toast.show('Holding updated.')
     } catch (err) {
@@ -417,11 +415,7 @@ function HoldingRow({
         <div style={{ fontWeight: 600 }}>{holding.properties?.name}</div>
         <div style={{ fontSize: 12, color: 'var(--text-faint)' }}>{holding.properties?.location}</div>
       </div>
-      {editing ? (
-        <input className="form-input" style={{ marginBottom: 0 }} type="number" value={ownership} onChange={(e) => setOwnership(e.target.value)} />
-      ) : (
-        <div>{fmtPct(holding.ownership_pct)}</div>
-      )}
+      <div>{fmtPct(ownershipPct)}</div>
       {editing ? (
         <input className="form-input" style={{ marginBottom: 0 }} type="number" value={invested} onChange={(e) => setInvested(e.target.value)} />
       ) : (
