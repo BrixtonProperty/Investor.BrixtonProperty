@@ -6,6 +6,7 @@ import AppShell from '../components/Layout/AppShell'
 
 import LoginPage from '../features/auth/LoginPage'
 import AcceptInvitePage from '../features/auth/AcceptInvitePage'
+import ResetPasswordPage from '../features/auth/ResetPasswordPage'
 import MfaEnrollPage from '../features/auth/MfaEnrollPage'
 import MfaChallengePage from '../features/auth/MfaChallengePage'
 
@@ -41,6 +42,10 @@ export const router = createBrowserRouter([
   // verifyOtp on submit) rather than requiring one to already exist -- see
   // AcceptInvitePage for why.
   { path: '/accept-invite', element: <AcceptInvitePage /> },
+  // Also not behind RequireAuth: the emailed reset link establishes the
+  // session itself (Supabase's own auto-consuming link), so this page must
+  // be reachable before any session exists yet.
+  { path: '/reset-password', element: <ResetPasswordPage /> },
   {
     element: <RequireAuth />,
     children: [

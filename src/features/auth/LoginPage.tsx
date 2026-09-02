@@ -12,6 +12,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
 
+  const [mode, setMode] = useState<'login' | 'forgot' | 'sent'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -37,6 +38,98 @@ export default function LoginPage() {
       return
     }
     navigate('/', { replace: true })
+  }
+
+  async function handleForgotSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setSubmitting(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    setSubmitting(false)
+    // Deliberately shown regardless of whether the email is actually
+    // registered -- confirming/denying that here would let anyone probe
+    // which emails have accounts.
+    if (error) {
+      setError(error.message)
+      return
+    }
+    setMode('sent')
+  }
+
+  if (mode !== 'login') {
+    return (
+      <div className="login-screen">
+        <div className="login-photo" style={bgUrl ? { backgroundImage: `url('${bgUrl}')` } : undefined} />
+        <div className="login-panel">
+          <div className="login-logo">
+            {logoUrl ? (
+              <img src={logoUrl} alt={settings?.company_name ?? 'Brixton Property'} />
+            ) : (
+              <div className="serif" style={{ fontSize: 22, fontWeight: 600 }}>
+                {settings?.company_name ?? 'Brixton Property'}
+              </div>
+            )}
+          </div>
+          <h1 className="serif">Reset your password</h1>
+
+          {mode === 'sent' ? (
+            <>
+              <div className="sub-text">
+                If an account exists for <b>{email}</b>, we've sent a link to reset your password. Check your inbox.
+              </div>
+              <button
+                type="button"
+                className="btn-outline"
+                style={{ marginTop: 20 }}
+                onClick={() => {
+                  setMode('login')
+                  setEmail('')
+                }}
+              >
+                Back to Log In
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="sub-text">Enter your email address and we'll send you a link to reset your password.</div>
+              {error && <div className="login-error">{error}</div>}
+              <form onSubmit={handleForgotSubmit}>
+                <label className="field-label" htmlFor="forgot-email">
+                  Email address
+                </label>
+                <div className="field-input">
+                  <input
+                    id="forgot-email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    autoComplete="username"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <button type="submit" className="btn-gold" disabled={submitting}>
+                  {submitting ? 'SENDING…' : 'SEND RESET LINK'}
+                </button>
+              </form>
+              <button
+                type="button"
+                className="btn-text"
+                style={{ marginTop: 14 }}
+                onClick={() => {
+                  setMode('login')
+                  setError(null)
+                }}
+              >
+                ← Back to Log In
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -100,6 +193,16 @@ export default function LoginPage() {
             <label>
               <input type="checkbox" /> Remember me
             </label>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault()
+                setError(null)
+                setMode('forgot')
+              }}
+            >
+              Forgot password?
+            </a>
           </div>
           <button type="submit" className="btn-gold" disabled={submitting}>
             {submitting ? 'LOGGING IN…' : 'LOG IN'}

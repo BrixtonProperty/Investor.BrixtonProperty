@@ -234,32 +234,34 @@ export default function PropertyDetailAdminPage() {
             MANAGE
           </button>
         </div>
-        {(tenants.data ?? []).length === 0 && (
-          <div style={{ fontSize: 12, color: 'var(--text-faint)', padding: '4px 0 12px' }}>No tenants added yet.</div>
-        )}
-        {(tenants.data ?? []).map((t) => (
-          <div key={t.id} style={{ padding: '12px 0', borderTop: '1px solid var(--border)' }}>
-            <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 6 }}>{t.name}</div>
-            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: t.description ? 6 : 0 }}>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Lease Term</div>
-                <div style={{ fontSize: 13 }}>{fmtLeaseTerm(t.lease_term)}</div>
+        <div className="doc-list">
+          {(tenants.data ?? []).length === 0 && (
+            <div style={{ fontSize: 12, color: 'var(--text-faint)', padding: '4px 0 12px' }}>No tenants added yet.</div>
+          )}
+          {(tenants.data ?? []).map((t) => (
+            <div className="doc-row" key={t.id} style={{ display: 'block', cursor: 'default' }}>
+              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 6 }}>{t.name}</div>
+              <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: t.description ? 6 : 0 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Lease Term</div>
+                  <div style={{ fontSize: 13 }}>{fmtLeaseTerm(t.lease_term)}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Lease Expiry</div>
+                  <div style={{ fontSize: 13 }}>{fmtDate(t.lease_expiry)}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Right of Renewal</div>
+                  <div style={{ fontSize: 13 }}>{t.right_of_renewal || '—'}</div>
+                </div>
               </div>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Lease Expiry</div>
-                <div style={{ fontSize: 13 }}>{fmtDate(t.lease_expiry)}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Right of Renewal</div>
-                <div style={{ fontSize: 13 }}>{t.right_of_renewal || '—'}</div>
-              </div>
+              {t.description && <div style={{ fontSize: 12, color: 'var(--text-dim)', lineHeight: 1.5 }}>{t.description}</div>}
             </div>
-            {t.description && <div style={{ fontSize: 12, color: 'var(--text-dim)', lineHeight: 1.5 }}>{t.description}</div>}
-          </div>
-        ))}
-        <button className="btn-outline" style={{ width: '100%', marginTop: 12 }} onClick={() => navigate(`/admin/properties/${id}/tenants`)}>
-          MANAGE TENANTS
-        </button>
+          ))}
+          <button className="btn-outline" style={{ width: '100%', marginTop: 12 }} onClick={() => navigate(`/admin/properties/${id}/tenants`)}>
+            MANAGE TENANTS
+          </button>
+        </div>
       </div>
 
       <div className="card" style={{ marginTop: 22 }}>

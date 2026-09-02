@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabaseClient'
+import { router } from './router'
 import type { InvestorUser } from '../types/database.types'
 
 interface AuthState {
@@ -70,8 +71,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // listener fires independently, so `loading` still clears even if that
     // happens -- otherwise the page is stuck on "Loading..." forever and a
     // refresh drops the still-unconsumed hash, landing back on /login.
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       applySession(newSession)
+      // Supabase fires this distinct event when the URL carries a password
+      // recovery token, independent of which path the link actually landed
+      // on. Relying on that (rather than only the emailed link's redirect_to
+      // path) means this still works even if redirect_to gets silently
+      // truncated to the site's bare origin -- the same class of allowlist
+      // mismatch that broke the invite flow before.
+      if (event === 'PASSWORD_RECOVERY') {
+        router.navigate('/reset-password', { replace: true })
+      }
     })
 
     // Last-resort safety net: never leave the app stuck on a loading
