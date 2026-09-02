@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../app/AuthProvider'
 import { supabase } from '../../lib/supabaseClient'
 
@@ -14,7 +14,7 @@ import { supabase } from '../../lib/supabaseClient'
  * show a clear, actionable message rather than a silent bounce to /login.
  */
 export default function ResetPasswordPage() {
-  const { session, loading, refreshInvestorUser } = useAuth()
+  const { session, loading, aal, hasMfaFactor, refreshInvestorUser } = useAuth()
   const navigate = useNavigate()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -23,6 +23,13 @@ export default function ResetPasswordPage() {
 
   if (loading) {
     return <div className="center-screen loading-state">Verifying your link…</div>
+  }
+  // A recovery link only ever establishes aal1 -- Supabase refuses to change
+  // a password on an MFA-enabled account below aal2, so anyone with a
+  // factor enrolled (everyone, post the MFA rollout) needs to clear the
+  // normal challenge first. Comes straight back here afterward.
+  if (session && hasMfaFactor && aal !== 'aal2') {
+    return <Navigate to="/mfa-challenge" state={{ from: '/reset-password' }} replace />
   }
   if (!session) {
     return (

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../app/AuthProvider'
 import { MFA_SESSION_FLAG } from '../../app/RequireRole'
@@ -7,6 +7,12 @@ import { MFA_SESSION_FLAG } from '../../app/RequireRole'
 export default function MfaChallengePage() {
   const { session, investorUser, refreshAal, refreshInvestorUser } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  // Set by ResetPasswordPage when it sends someone here first -- Supabase
+  // requires an aal2 session to change a password once MFA is enabled, but
+  // a password-recovery link only ever establishes aal1. Falls back to the
+  // normal role-based landing page for every other route that lands here.
+  const returnTo = (location.state as { from?: string } | null)?.from
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -40,7 +46,7 @@ export default function MfaChallengePage() {
     sessionStorage.setItem(MFA_SESSION_FLAG, '1')
     await Promise.all([refreshAal(), refreshInvestorUser()])
     setSubmitting(false)
-    navigate(investorUser?.role === 'admin' ? '/admin/properties' : '/dashboard', { replace: true })
+    navigate(returnTo || (investorUser?.role === 'admin' ? '/admin/properties' : '/dashboard'), { replace: true })
   }
 
   return (
