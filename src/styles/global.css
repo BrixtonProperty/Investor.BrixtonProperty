@@ -378,4 +378,9 @@ h1.page-title{ font-family:'Montserrat',sans-serif; font-weight:500; font-size:3
   .doc-table-head, .admin-table-head{ display:none; }
   .doc-table-row, .admin-table-row{ grid-template-columns:1fr; gap:6px; }
   .lightbox-main{ padding:0 12px; }
+  .page-head-row{ flex-wrap:wrap; }
+  .page-head-row > *:last-child{ width:100%; }
+  .page-head-row > *:last-child .btn-outline,
+  .page-head-row > *:last-child .btn-solid,
+  .page-head-row > *:last-child .btn-danger{ flex:1; }
 }

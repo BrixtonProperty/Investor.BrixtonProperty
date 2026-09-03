@@ -14,14 +14,20 @@ export default function PropertiesAdminPage() {
   const toast = useToast()
 
   const [showAdd, setShowAdd] = useState(false)
-  const [form, setForm] = useState({
+  const emptyForm = {
     name: '',
     location: '',
     total_value: '',
     initial_investment_amount: '',
+    total_equity_invested: '',
+    loan_value: '',
     valuation_date: new Date().toISOString().slice(0, 10),
     type: '',
-  })
+    size: '',
+    occupancy: '',
+    year_built: '',
+  }
+  const [form, setForm] = useState(emptyForm)
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
@@ -31,19 +37,17 @@ export default function PropertiesAdminPage() {
         location: form.location,
         total_value: Number(form.total_value),
         initial_investment_amount: form.initial_investment_amount ? Number(form.initial_investment_amount) : null,
+        total_equity_invested: form.total_equity_invested ? Number(form.total_equity_invested) : null,
+        loan_value: form.loan_value ? Number(form.loan_value) : null,
         valuation_date: form.valuation_date,
         type: form.type,
+        size: form.size || null,
+        occupancy: form.occupancy || null,
+        year_built: form.year_built ? Number(form.year_built) : null,
         description: '',
       })
       setShowAdd(false)
-      setForm({
-        name: '',
-        location: '',
-        total_value: '',
-        initial_investment_amount: '',
-        valuation_date: new Date().toISOString().slice(0, 10),
-        type: '',
-      })
+      setForm(emptyForm)
       toast.show(`${created.name} added.`)
     } catch (err) {
       toast.show(err instanceof Error ? err.message : 'Could not add property.', 'error')
@@ -128,6 +132,26 @@ export default function PropertiesAdminPage() {
               value={form.initial_investment_amount}
               onChange={(e) => setForm({ ...form, initial_investment_amount: e.target.value })}
             />
+            <label className="field-label">Total Equity Invested ($)</label>
+            <input
+              className="form-input"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Total equity invested into the property at purchase"
+              value={form.total_equity_invested}
+              onChange={(e) => setForm({ ...form, total_equity_invested: e.target.value })}
+            />
+            <label className="field-label">Loan Value ($)</label>
+            <input
+              className="form-input"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Outstanding loan balance against this property"
+              value={form.loan_value}
+              onChange={(e) => setForm({ ...form, loan_value: e.target.value })}
+            />
             <label className="field-label">Valuation Date</label>
             <input
               className="form-input"
@@ -135,6 +159,27 @@ export default function PropertiesAdminPage() {
               required
               value={form.valuation_date}
               onChange={(e) => setForm({ ...form, valuation_date: e.target.value })}
+            />
+            <label className="field-label">Net Lettable Area (NLA)</label>
+            <input
+              className="form-input"
+              value={form.size}
+              onChange={(e) => setForm({ ...form, size: e.target.value })}
+              placeholder="e.g. 6,250 m²"
+            />
+            <label className="field-label">Occupancy</label>
+            <input
+              className="form-input"
+              value={form.occupancy}
+              onChange={(e) => setForm({ ...form, occupancy: e.target.value })}
+              placeholder="e.g. 100%"
+            />
+            <label className="field-label">Year Built / Renovated</label>
+            <input
+              className="form-input"
+              type="number"
+              value={form.year_built}
+              onChange={(e) => setForm({ ...form, year_built: e.target.value })}
             />
           </form>
         </Modal>
