@@ -63,6 +63,7 @@ export default function PropertyDetailPage() {
                 caption: `As at ${fmtDate(p.valuation_date)}`,
               },
               { icon: '%', label: 'Your Ownership', value: holding.data ? fmtPct(holding.data.ownership_pct) : '—' },
+              { icon: '$', label: 'Your Initial Investment', value: holding.data ? fmtCurrency(holding.data.invested_amount) : '—' },
               {
                 icon: '%',
                 label: 'LVR',

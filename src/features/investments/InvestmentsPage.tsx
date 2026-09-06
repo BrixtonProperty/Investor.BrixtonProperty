@@ -43,6 +43,7 @@ export default function InvestmentsPage() {
               stats={[
                 { label: 'LATEST VALUATION', value: fmtCurrency(p.total_value) },
                 { label: 'OWNERSHIP', value: h ? fmtPct(h.ownership_pct) : '—' },
+                { label: 'YOUR INITIAL INVESTMENT', value: h ? fmtCurrency(h.invested_amount) : '—' },
                 { label: 'AS AT', value: fmtDate(p.valuation_date) },
               ]}
             />
