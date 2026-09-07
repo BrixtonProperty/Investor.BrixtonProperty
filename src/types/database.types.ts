@@ -147,6 +147,18 @@ export type SiteSettings = {
   updated_at: string
 }
 
+export type AuthEventLog = {
+  id: number
+  user_id: string
+  event_type: string
+  session_id: string | null
+  aal: string | null
+  last_sign_in_at: string | null
+  last_mfa_verified_at: string | null
+  user_agent: string | null
+  created_at: string
+}
+
 type TableDef<Row> = { Row: Row; Insert: Partial<Row>; Update: Partial<Row>; Relationships: [] }
 type ViewDef<Row> = { Row: Row; Relationships: [] }
 
@@ -163,6 +175,7 @@ export type Database = {
       notices: TableDef<Notice>
       property_tenants: TableDef<PropertyTenant>
       site_settings: TableDef<SiteSettings>
+      auth_event_log: TableDef<AuthEventLog>
     }
     Views: {
       investor_holdings: ViewDef<InvestorHolding>

@@ -17,6 +17,37 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | undefined>(undefined)
 
+function decodeJwt(token: string): { aal?: string; session_id?: string } | null {
+  try {
+    return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+  } catch {
+    return null
+  }
+}
+
+/** Temporary diagnostic: records every auth state transition to
+ * `auth_event_log` (see migration 0008) so a real admin MFA re-prompt can be
+ * traced back to what actually happened (a genuine fresh sign-in vs. an
+ * unexpected aal drop on an otherwise-continuous session) instead of
+ * guessed at after the fact. Never throws -- logging failure must not
+ * affect the real auth flow. Safe to remove once that's understood. */
+async function logAuthEvent(eventType: string, newSession: Session, investorUser: InvestorUser | null) {
+  const claims = decodeJwt(newSession.access_token)
+  try {
+    await supabase.from('auth_event_log').insert({
+      user_id: newSession.user.id,
+      event_type: eventType,
+      session_id: claims?.session_id ?? null,
+      aal: claims?.aal ?? null,
+      last_sign_in_at: newSession.user.last_sign_in_at ?? null,
+      last_mfa_verified_at: investorUser?.last_mfa_verified_at ?? null,
+      user_agent: navigator.userAgent,
+    })
+  } catch {
+    // diagnostic-only -- never let logging failure affect the real auth flow
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [investorUser, setInvestorUser] = useState<InvestorUser | null>(null)
@@ -27,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function loadInvestorUser(userId: string) {
     const { data } = await supabase.from('investor_users').select('*').eq('id', userId).maybeSingle()
     setInvestorUser(data ?? null)
+    return data ?? null
   }
 
   async function loadAal() {
@@ -40,12 +72,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true
     let resolvedOnce = false
 
-    async function applySession(newSession: Session | null) {
+    async function applySession(newSession: Session | null, eventType: string) {
       if (!mounted) return
       setSession(newSession)
       if (newSession) {
         try {
-          await Promise.all([loadInvestorUser(newSession.user.id), loadAal()])
+          const [investorUserRow] = await Promise.all([loadInvestorUser(newSession.user.id), loadAal()])
+          logAuthEvent(eventType, newSession, investorUserRow)
         } catch {
           // don't let a transient profile/MFA lookup failure block auth resolution
         }
@@ -62,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Primary path: on mount, whatever session (if any) is already
     // established -- including one just detected from an invite/magic-link
     // URL fragment.
-    supabase.auth.getSession().then(({ data }) => applySession(data.session))
+    supabase.auth.getSession().then(({ data }) => applySession(data.session, 'INITIAL_SESSION'))
 
     // Also resolves loading from here: getSession()'s own promise has a
     // known race against the URL-based session-detection that runs on
@@ -72,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // happens -- otherwise the page is stuck on "Loading..." forever and a
     // refresh drops the still-unconsumed hash, landing back on /login.
     const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
-      applySession(newSession)
+      applySession(newSession, event)
       // Supabase fires this distinct event when the URL carries a password
       // recovery token, independent of which path the link actually landed
       // on. Relying on that (rather than only the emailed link's redirect_to
