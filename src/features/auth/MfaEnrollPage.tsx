@@ -9,6 +9,7 @@ export default function MfaEnrollPage() {
   const { session, investorUser, refreshAal, refreshInvestorUser } = useAuth()
   const navigate = useNavigate()
   const [qrCode, setQrCode] = useState<string | null>(null)
+  const [secret, setSecret] = useState<string | null>(null)
   const [factorId, setFactorId] = useState<string | null>(null)
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -49,6 +50,7 @@ export default function MfaEnrollPage() {
         return
       }
       setQrCode(data.totp.qr_code)
+      setSecret(data.totp.secret)
       setFactorId(data.id)
     }
 
@@ -102,6 +104,11 @@ export default function MfaEnrollPage() {
         {qrCode && (
           <div className="mfa-qr">
             <img src={qrCode} alt="MFA QR code" />
+          </div>
+        )}
+        {secret && (
+          <div style={{ fontSize: 12, color: 'var(--text-faint)', marginBottom: 20 }}>
+            Can't scan it? Enter this key manually: <code>{secret}</code>
           </div>
         )}
         <form onSubmit={handleVerify}>

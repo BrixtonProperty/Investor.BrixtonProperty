@@ -19,6 +19,7 @@ import TenantsPage from '../features/investments/TenantsPage'
 import UpdatesPage from '../features/updates/UpdatesPage'
 import ProfilePage from '../features/profile/ProfilePage'
 import ContactPage from '../features/contact/ContactPage'
+import SecurityPage from '../features/security/SecurityPage'
 
 import PropertiesAdminPage from '../features/admin/properties/PropertiesAdminPage'
 import PropertyDetailAdminPage from '../features/admin/properties/PropertyDetailAdminPage'
@@ -66,6 +67,7 @@ export const router = createBrowserRouter([
               { path: '/investments/:id/tenants', element: <TenantsPage /> },
               { path: '/updates', element: <UpdatesPage /> },
               { path: '/profile', element: <ProfilePage /> },
+              { path: '/security', element: <SecurityPage /> },
               { path: '/contact', element: <ContactPage /> },
             ],
           },
@@ -86,6 +88,7 @@ export const router = createBrowserRouter([
               { path: '/admin/investors/:id', element: <InvestorDetailAdminPage /> },
               { path: '/admin/document-categories', element: <DocumentCategoriesAdminPage /> },
               { path: '/admin/settings', element: <SiteSettingsAdminPage /> },
+              { path: '/admin/security', element: <SecurityPage /> },
               { path: '/admin/portfolio', element: <PortfolioDashboardPage /> },
               { path: '/admin/portfolio/investments', element: <PortfolioInvestmentsPage /> },
               { path: '/admin/portfolio/investments/:id', element: <PortfolioPropertyDetailPage /> },

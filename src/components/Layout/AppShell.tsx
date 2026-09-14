@@ -22,6 +22,7 @@ const investorNav: NavItem[] = [
 ]
 const investorSecondaryNav: NavItem[] = [
   { to: '/profile', label: 'My Profile', end: true },
+  { to: '/security', label: 'Security', end: true },
   { to: '/contact', label: 'Contact', end: true },
 ]
 
@@ -30,7 +31,10 @@ const adminNav: NavItem[] = [
   { to: '/admin/investors', label: 'Investors' },
   { to: '/admin/document-categories', label: 'Document Categories', end: true },
 ]
-const adminSecondaryNav: NavItem[] = [{ to: '/admin/settings', label: 'Site Settings', end: true }]
+const adminSecondaryNav: NavItem[] = [
+  { to: '/admin/settings', label: 'Site Settings', end: true },
+  { to: '/admin/security', label: 'Security', end: true },
+]
 
 // Admin's read-only preview of the investor experience -- unscoped across
 // every property, since an admin has no personal holdings of their own.
