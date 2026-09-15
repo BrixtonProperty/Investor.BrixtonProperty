@@ -3,6 +3,8 @@ import { useAuth } from '../../app/AuthProvider'
 import { useUpdateInvestorUser } from '../../queries/investorUsers'
 import { useInvestorAccount } from '../../queries/investorAccounts'
 import { useToast } from '../../components/Toast'
+import Tabs from '../../components/Tabs'
+import SecuritySettings from '../../components/SecuritySettings'
 import type { InvestorUser } from '../../types/database.types'
 
 type FormState = Pick<
@@ -10,12 +12,15 @@ type FormState = Pick<
   'name' | 'phone' | 'address_line1' | 'address_line2' | 'suburb_city' | 'region' | 'postcode' | 'country'
 >
 
+type Tab = 'personal' | 'security'
+
 export default function ProfilePage() {
   const { investorUser, refreshInvestorUser } = useAuth()
   const account = useInvestorAccount(investorUser?.investor_account_id ?? undefined)
   const update = useUpdateInvestorUser()
   const toast = useToast()
 
+  const [tab, setTab] = useState<Tab>('personal')
   const [form, setForm] = useState<FormState | null>(null)
 
   useEffect(() => {
@@ -66,122 +71,140 @@ export default function ProfilePage() {
 
   return (
     <>
-      <h1 className="page-title serif">My Profile</h1>
-      <div className="page-sub">View and update your investor profile details.</div>
+      <h1 className="page-title serif">Profile</h1>
+      <div className="page-sub">Your personal information and account security.</div>
+
       <div className="card">
-        <div className="profile-row">
-          <div className="num-badge">1</div>
-          <div>
-            <div className="profile-label">Investor Name</div>
-            <div className="profile-hint">Enter your full name.</div>
-          </div>
-          <div>
-            <input className="form-input" type="text" value={form.name} onChange={(e) => set('name', e.target.value)} />
-          </div>
-        </div>
-        <div className="profile-row">
-          <div className="num-badge">2</div>
-          <div>
-            <div className="profile-label">Email</div>
-            <div className="profile-hint">Contact us to change the email linked to your login.</div>
-          </div>
-          <div>
-            <input className="form-input" type="email" value={investorUser.email} disabled />
-          </div>
-        </div>
-        <div className="profile-row">
-          <div className="num-badge">3</div>
-          <div>
-            <div className="profile-label">Phone</div>
-            <div className="profile-hint">Enter your contact number.</div>
-          </div>
-          <div>
-            <input
-              className="form-input"
-              type="text"
-              value={form.phone ?? ''}
-              onChange={(e) => set('phone', e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="profile-row">
-          <div className="num-badge">4</div>
-          <div>
-            <div className="profile-label">Postal Address</div>
-            <div className="profile-hint">Enter your postal address.</div>
-          </div>
-          <div>
-            <input
-              className="form-input"
-              type="text"
-              placeholder="Address line 1"
-              value={form.address_line1 ?? ''}
-              onChange={(e) => set('address_line1', e.target.value)}
-            />
-            <input
-              className="form-input"
-              type="text"
-              placeholder="Address Line 2 (optional)"
-              value={form.address_line2 ?? ''}
-              onChange={(e) => set('address_line2', e.target.value)}
-            />
-            <div className="addr-grid">
+        <Tabs
+          items={[
+            { id: 'personal', label: 'Personal Information' },
+            { id: 'security', label: 'Security' },
+          ]}
+          active={tab}
+          onChange={(t) => setTab(t as Tab)}
+        />
+
+        {tab === 'personal' && (
+          <div style={{ padding: '18px 22px' }}>
+            <div className="profile-row">
+              <div className="num-badge">1</div>
               <div>
-                <input
-                  className="form-input"
-                  type="text"
-                  value={form.suburb_city ?? ''}
-                  onChange={(e) => set('suburb_city', e.target.value)}
-                />
-                <div className="field-cap">Suburb / City</div>
+                <div className="profile-label">Name</div>
+                <div className="profile-hint">Enter your full name.</div>
               </div>
               <div>
-                <input
-                  className="form-input"
-                  type="text"
-                  value={form.region ?? ''}
-                  onChange={(e) => set('region', e.target.value)}
-                />
-                <div className="field-cap">State / Region</div>
-              </div>
-              <div>
-                <input
-                  className="form-input"
-                  type="text"
-                  value={form.postcode ?? ''}
-                  onChange={(e) => set('postcode', e.target.value)}
-                />
-                <div className="field-cap">Postcode</div>
+                <input className="form-input" type="text" value={form.name} onChange={(e) => set('name', e.target.value)} />
               </div>
             </div>
-            <input
-              className="form-input"
-              type="text"
-              style={{ marginTop: 10 }}
-              value={form.country}
-              onChange={(e) => set('country', e.target.value)}
-            />
-            <div className="field-cap">Country</div>
+            <div className="profile-row">
+              <div className="num-badge">2</div>
+              <div>
+                <div className="profile-label">Email</div>
+                <div className="profile-hint">Contact us to change the email linked to your login.</div>
+              </div>
+              <div>
+                <input className="form-input" type="email" value={investorUser.email} disabled />
+              </div>
+            </div>
+            <div className="profile-row">
+              <div className="num-badge">3</div>
+              <div>
+                <div className="profile-label">Phone</div>
+                <div className="profile-hint">Enter your contact number.</div>
+              </div>
+              <div>
+                <input
+                  className="form-input"
+                  type="text"
+                  value={form.phone ?? ''}
+                  onChange={(e) => set('phone', e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="profile-row">
+              <div className="num-badge">4</div>
+              <div>
+                <div className="profile-label">Postal Address</div>
+                <div className="profile-hint">Enter your postal address.</div>
+              </div>
+              <div>
+                <input
+                  className="form-input"
+                  type="text"
+                  placeholder="Address line 1"
+                  value={form.address_line1 ?? ''}
+                  onChange={(e) => set('address_line1', e.target.value)}
+                />
+                <input
+                  className="form-input"
+                  type="text"
+                  placeholder="Address Line 2 (optional)"
+                  value={form.address_line2 ?? ''}
+                  onChange={(e) => set('address_line2', e.target.value)}
+                />
+                <div className="addr-grid">
+                  <div>
+                    <input
+                      className="form-input"
+                      type="text"
+                      value={form.suburb_city ?? ''}
+                      onChange={(e) => set('suburb_city', e.target.value)}
+                    />
+                    <div className="field-cap">Suburb / City</div>
+                  </div>
+                  <div>
+                    <input
+                      className="form-input"
+                      type="text"
+                      value={form.region ?? ''}
+                      onChange={(e) => set('region', e.target.value)}
+                    />
+                    <div className="field-cap">State / Region</div>
+                  </div>
+                  <div>
+                    <input
+                      className="form-input"
+                      type="text"
+                      value={form.postcode ?? ''}
+                      onChange={(e) => set('postcode', e.target.value)}
+                    />
+                    <div className="field-cap">Postcode</div>
+                  </div>
+                </div>
+                <input
+                  className="form-input"
+                  type="text"
+                  style={{ marginTop: 10 }}
+                  value={form.country}
+                  onChange={(e) => set('country', e.target.value)}
+                />
+                <div className="field-cap">Country</div>
+              </div>
+            </div>
+            {investorUser.investor_account_id && (
+              <div className="profile-row">
+                <div className="num-badge">5</div>
+                <div>
+                  <div className="profile-label">Entity Name</div>
+                  <div className="profile-hint">The name of your investor entity. Contact Brixton to change this.</div>
+                </div>
+                <div>
+                  <input className="form-input" type="text" value={account.data?.display_name ?? ''} disabled />
+                </div>
+              </div>
+            )}
+            <div className="profile-actions">
+              <button className="btn-outline" type="button" onClick={handleCancel}>
+                CANCEL
+              </button>
+              <button className="btn-solid" type="button" onClick={handleSave} disabled={update.isPending}>
+                {update.isPending ? 'SAVING…' : 'SAVE CHANGES'}
+              </button>
+            </div>
           </div>
-        </div>
-        <div className="profile-row">
-          <div className="num-badge">5</div>
-          <div>
-            <div className="profile-label">Entity Name</div>
-            <div className="profile-hint">The name of your investor entity. Contact Brixton to change this.</div>
-          </div>
-          <div>
-            <input className="form-input" type="text" value={account.data?.display_name ?? ''} disabled />
-          </div>
-        </div>
-        <div className="profile-actions">
-          <button className="btn-outline" type="button" onClick={handleCancel}>
-            CANCEL
-          </button>
-          <button className="btn-solid" type="button" onClick={handleSave} disabled={update.isPending}>
-            {update.isPending ? 'SAVING…' : 'SAVE CHANGES'}
-          </button>
-        </div>
+        )}
+
+        {tab === 'security' && <SecuritySettings />}
       </div>
     </>
   )

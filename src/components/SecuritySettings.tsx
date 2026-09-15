@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../../lib/supabaseClient'
-import { useAuth } from '../../app/AuthProvider'
-import { useToast } from '../../components/Toast'
+import { supabase } from '../lib/supabaseClient'
+import { useAuth } from '../app/AuthProvider'
+import { useToast } from './Toast'
 
 type Factor = { id: string; created_at: string }
 
 /** Self-service "change my authenticator app" flow, shared by both admin and
- * investor accounts (routed at /security and /admin/security). Replacing
+ * investor accounts -- embedded as the Security tab on ProfilePage. Replacing
  * rather than a bare delete: enrolls the new app first and only removes the
  * old factor once the new one verifies, so the account is never briefly left
  * with zero factors mid-flow -- MFA is mandatory for every account. */
-export default function SecurityPage() {
+export default function SecuritySettings() {
   const { refreshAal } = useAuth()
   const toast = useToast()
 
@@ -109,71 +109,67 @@ export default function SecurityPage() {
   if (loading) return <div className="loading-state">Loading security settings…</div>
 
   return (
-    <>
-      <h1 className="page-title serif">Security</h1>
-      <div className="page-sub">Manage the authenticator app used for your two-factor login.</div>
-      <div className="card" style={{ padding: 28, maxWidth: 460 }}>
-        <div className="section-label">TWO-FACTOR AUTHENTICATION</div>
+    <div style={{ padding: '18px 22px', maxWidth: 460 }}>
+      <div className="section-label">TWO-FACTOR AUTHENTICATION</div>
 
-        {!replacing && (
-          <>
-            <p style={{ fontSize: 13, color: 'var(--text-dim)' }}>
-              {factor
-                ? 'Two-factor authentication is active on your account.'
-                : "No authenticator app is set up -- you'll be asked to set one up next time you sign in."}
-            </p>
-            {error && <div className="login-error">{error}</div>}
-            <button className="btn-outline" type="button" onClick={handleStart}>
-              {factor ? 'CHANGE AUTHENTICATOR APP' : 'SET UP AUTHENTICATOR APP'}
-            </button>
-          </>
-        )}
+      {!replacing && (
+        <>
+          <p style={{ fontSize: 13, color: 'var(--text-dim)' }}>
+            {factor
+              ? 'Two-factor authentication is active on your account.'
+              : "No authenticator app is set up -- you'll be asked to set one up next time you sign in."}
+          </p>
+          {error && <div className="login-error">{error}</div>}
+          <button className="btn-outline" type="button" onClick={handleStart}>
+            {factor ? 'CHANGE AUTHENTICATOR APP' : 'SET UP AUTHENTICATOR APP'}
+          </button>
+        </>
+      )}
 
-        {replacing && (
-          <>
-            <p style={{ fontSize: 13, color: 'var(--text-dim)' }}>
-              Scan this QR code with the new authenticator app, then enter the 6-digit code it generates.
-              {factor && ' Your current authenticator app will stop working once this is confirmed.'}
-            </p>
-            {qrCode && (
-              <div className="mfa-qr">
-                <img src={qrCode} alt="New authenticator QR code" />
-              </div>
-            )}
-            {secret && (
-              <div style={{ fontSize: 12, color: 'var(--text-faint)', marginBottom: 20 }}>
-                Can't scan it? Enter this key manually: <code>{secret}</code>
-              </div>
-            )}
-            {error && <div className="login-error">{error}</div>}
-            <form onSubmit={handleVerify}>
-              <label className="field-label" htmlFor="security-mfa-code">
-                6-digit code
-              </label>
-              <div className="field-input">
-                <input
-                  id="security-mfa-code"
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                  autoFocus
-                  required
-                />
-              </div>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button type="submit" className="btn-gold" disabled={submitting || code.length !== 6}>
-                  {submitting ? 'CONFIRMING…' : 'CONFIRM & REPLACE'}
-                </button>
-                <button type="button" className="btn-outline" onClick={handleCancel} disabled={submitting}>
-                  CANCEL
-                </button>
-              </div>
-            </form>
-          </>
-        )}
-      </div>
-    </>
+      {replacing && (
+        <>
+          <p style={{ fontSize: 13, color: 'var(--text-dim)' }}>
+            Scan this QR code with the new authenticator app, then enter the 6-digit code it generates.
+            {factor && ' Your current authenticator app will stop working once this is confirmed.'}
+          </p>
+          {qrCode && (
+            <div className="mfa-qr">
+              <img src={qrCode} alt="New authenticator QR code" />
+            </div>
+          )}
+          {secret && (
+            <div style={{ fontSize: 12, color: 'var(--text-faint)', marginBottom: 20 }}>
+              Can't scan it? Enter this key manually: <code>{secret}</code>
+            </div>
+          )}
+          {error && <div className="login-error">{error}</div>}
+          <form onSubmit={handleVerify}>
+            <label className="field-label" htmlFor="security-mfa-code">
+              6-digit code
+            </label>
+            <div className="field-input">
+              <input
+                id="security-mfa-code"
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                autoFocus
+                required
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="submit" className="btn-gold" disabled={submitting || code.length !== 6}>
+                {submitting ? 'CONFIRMING…' : 'CONFIRM & REPLACE'}
+              </button>
+              <button type="button" className="btn-outline" onClick={handleCancel} disabled={submitting}>
+                CANCEL
+              </button>
+            </div>
+          </form>
+        </>
+      )}
+    </div>
   )
 }

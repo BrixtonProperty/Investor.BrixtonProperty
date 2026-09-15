@@ -20,21 +20,14 @@ const investorNav: NavItem[] = [
   { to: '/investments', label: 'Investments' },
   { to: '/updates', label: 'Investor Updates', end: true },
 ]
-const investorSecondaryNav: NavItem[] = [
-  { to: '/profile', label: 'My Profile', end: true },
-  { to: '/security', label: 'Security', end: true },
-  { to: '/contact', label: 'Contact', end: true },
-]
+const investorSecondaryNav: NavItem[] = [{ to: '/contact', label: 'Contact', end: true }]
 
 const adminNav: NavItem[] = [
   { to: '/admin/properties', label: 'Properties' },
   { to: '/admin/investors', label: 'Investors' },
   { to: '/admin/document-categories', label: 'Document Categories', end: true },
 ]
-const adminSecondaryNav: NavItem[] = [
-  { to: '/admin/settings', label: 'Site Settings', end: true },
-  { to: '/admin/security', label: 'Security', end: true },
-]
+const adminSecondaryNav: NavItem[] = [{ to: '/admin/settings', label: 'Site Settings', end: true }]
 
 // Admin's read-only preview of the investor experience -- unscoped across
 // every property, since an admin has no personal holdings of their own.
@@ -149,6 +142,14 @@ export default function AppShell() {
               Welcome, <b>{investorUser?.name ?? ''}</b> ▾
               {menuOpen && (
                 <div className="user-menu" onMouseLeave={() => setMenuOpen(false)}>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false)
+                      navigate(isAdmin ? '/admin/profile' : '/profile')
+                    }}
+                  >
+                    Profile
+                  </button>
                   <button onClick={handleLogout}>Log Out</button>
                 </div>
               )}
