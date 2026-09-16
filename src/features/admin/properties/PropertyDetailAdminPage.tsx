@@ -75,6 +75,7 @@ export default function PropertyDetailAdminPage() {
   const p = property.data
   const coverPhoto = (photos.data ?? []).find((ph) => ph.is_cover) ?? photos.data?.[0]
   const heroUrl = coverPhoto ? signed.data?.[coverPhoto.storage_path] : undefined
+  const subPhotos = (photos.data ?? []).filter((ph) => ph.id !== coverPhoto?.id).slice(0, 6)
 
   async function handleSaveProperty(e: React.FormEvent) {
     e.preventDefault()
@@ -191,7 +192,19 @@ export default function PropertyDetailAdminPage() {
           </div>
           <div className="photo-grid">
             <div className="photo-main" style={heroUrl ? { backgroundImage: `url('${heroUrl}')` } : undefined} />
-            <div style={{ fontSize: 12, color: 'var(--text-faint)' }}>
+            {subPhotos.length > 0 ? (
+              <div className="photo-sub">
+                {subPhotos.map((ph) => (
+                  <div
+                    key={ph.id}
+                    style={signed.data?.[ph.storage_path] ? { backgroundImage: `url('${signed.data[ph.storage_path]}')` } : undefined}
+                  />
+                ))}
+              </div>
+            ) : (
+              !heroUrl && <div style={{ color: 'var(--text-faint)', fontSize: 12, paddingTop: 8 }}>No photos published yet.</div>
+            )}
+            <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 12 }}>
               {photos.data?.length ?? 0} photo(s) published.
               {coverPhoto ? '' : ' No cover photo set yet.'}
             </div>

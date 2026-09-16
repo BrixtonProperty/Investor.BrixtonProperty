@@ -107,7 +107,7 @@ h1.page-title{ font-family:'Montserrat',sans-serif; font-weight:500; font-size:3
 
 .inv-row-d{ display:flex; gap:14px; align-items:center; padding:16px 22px; border-top:1px solid var(--border); cursor:pointer; }
 .inv-row-d:hover{ background:var(--panel-2); }
-.thumb-d{ width:58px;height:58px;border-radius:8px; background:#ddd center/cover; flex-shrink:0; }
+.thumb-d{ width:84px;height:84px;border-radius:8px; background:#ddd center/cover; flex-shrink:0; }
 .inv-name-d{ font-size:14px; font-weight:600; }
 .inv-loc-d{ font-size:12px; color:var(--text-faint); margin-bottom:6px; }
 .inv-meta-d{ display:flex; gap:22px; font-size:12px; color:var(--text-dim); }
