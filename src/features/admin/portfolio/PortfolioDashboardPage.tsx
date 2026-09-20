@@ -7,7 +7,7 @@ import { useMergedUpdates } from '../../../queries/updatesFeed'
 import { useSiteSettings } from '../../../queries/siteSettings'
 import { publicAssetUrl } from '../../../lib/signedUrl'
 import { fmtCurrency, fmtDate } from '../../../lib/format'
-import Icon from '../../../components/Icon'
+import PortfolioAllocationChart, { amberShade } from '../../../components/PortfolioAllocationChart'
 
 /** Admin's unscoped equivalent of the investor Dashboard -- totals across every
  * property in the system, since an admin has no personal holdings of their own. */
@@ -30,6 +30,18 @@ export default function PortfolioDashboardPage() {
     }
   }, [properties.data])
 
+  // Largest holding first -- gets the darkest amber, fading to pale gold for
+  // the smallest, matching the investor Dashboard's own allocation chart.
+  const allocationSlices = useMemo(() => {
+    const rows = [...(properties.data ?? [])].sort((a, b) => (b.initial_investment_amount ?? 0) - (a.initial_investment_amount ?? 0))
+    return rows.map((p, i) => ({
+      id: p.id,
+      label: p.name,
+      value: p.initial_investment_amount ?? 0,
+      color: amberShade(i, rows.length),
+    }))
+  }, [properties.data])
+
   const heroUrl = publicAssetUrl(settings?.dashboard_hero_storage_path)
   const recentUpdates = updates.items.slice(0, 5)
   const propertyById = new Map((properties.data ?? []).map((p) => [p.id, p]))
@@ -40,52 +52,39 @@ export default function PortfolioDashboardPage() {
     <>
       <h1 className="page-title serif">Portfolio</h1>
       <div className="dash-top">
-        <div>
-          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
-            Welcome back, {investorUser?.name?.split(' ')[0] ?? ''}.
+        <div className="dash-top-left">
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
+              Welcome back, {investorUser?.name?.split(' ')[0] ?? ''}.
+            </div>
+            <div className="page-sub" style={{ marginBottom: 0 }}>
+              An overview of every property Brixton manages.
+            </div>
           </div>
-          <div className="page-sub" style={{ marginBottom: 0 }}>
-            An overview of every property Brixton manages.
+          <div className="card portfolio-summary-card">
+            <PortfolioAllocationChart slices={allocationSlices} centerNumber={summary.totalProperties} centerLabel="Properties" />
+            <div className="portfolio-legend">
+              {allocationSlices.length === 0 && <div style={{ color: 'var(--text-faint)' }}>No properties yet.</div>}
+              {allocationSlices.map((s) => (
+                <div className="portfolio-legend-row" key={s.id}>
+                  <span className="portfolio-legend-dot" style={{ background: s.color }} />
+                  <span className="portfolio-legend-name">{s.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="portfolio-stats">
+              <div>
+                <div className="slabel">Total Initial Investment</div>
+                <div className="sval">{fmtCurrency(summary.totalInitialInvestment)}</div>
+              </div>
+              <div>
+                <div className="slabel">Total Latest Investment</div>
+                <div className="sval">{fmtCurrency(summary.totalValue)}</div>
+              </div>
+            </div>
           </div>
         </div>
         <div className="dash-hero" style={heroUrl ? { backgroundImage: `url('${heroUrl}')` } : undefined} />
-      </div>
-
-      <div className="card stat-panel">
-        <div className="stat-panel-title">Portfolio Summary</div>
-        <div className="stat-row3">
-          <div className="stat-item">
-            <div className="ic-circle">
-              <Icon name="building" />
-            </div>
-            <div>
-              <div className="slabel">Total Properties</div>
-              <div className="sval">{summary.totalProperties}</div>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="ic-circle">
-              <Icon name="clock" />
-            </div>
-            <div>
-              <div className="slabel">Total Initial Investment</div>
-              <div className="sval">{fmtCurrency(summary.totalInitialInvestment)}</div>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="ic-circle">
-              <Icon name="trendingUp" />
-            </div>
-            <div>
-              <div className="slabel">Total Latest Valuation</div>
-              <div className="sval">{fmtCurrency(summary.totalValue)}</div>
-              <div className="scap">as at {fmtDate(summary.asAt)}</div>
-            </div>
-          </div>
-          <button className="btn-outline" style={{ marginLeft: 'auto' }} onClick={() => navigate('/admin/portfolio/investments')}>
-            VIEW ALL INVESTMENTS
-          </button>
-        </div>
       </div>
 
       <div className="dash-grid">
