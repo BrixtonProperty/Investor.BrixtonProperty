@@ -9,6 +9,7 @@ import { useSiteSettings } from '../../queries/siteSettings'
 import { publicAssetUrl } from '../../lib/signedUrl'
 import { fmtCurrency, fmtDate, fmtPct } from '../../lib/format'
 import Icon from '../../components/Icon'
+import PortfolioAllocationChart, { amberShade } from '../../components/PortfolioAllocationChart'
 
 export default function DashboardPage() {
   const { investorUser } = useAuth()
@@ -35,6 +36,18 @@ export default function DashboardPage() {
     }
   }, [holdings.data])
 
+  // Largest holding first -- gets the darkest amber, fading to pale gold for
+  // the smallest, so the ring's color intensity tracks its share visually.
+  const allocationSlices = useMemo(() => {
+    const rows = [...(holdings.data ?? [])].sort((a, b) => b.invested_amount - a.invested_amount)
+    return rows.map((h, i) => ({
+      id: h.investor_property_id,
+      label: propertyById.get(h.property_id)?.name ?? 'Property',
+      value: h.invested_amount,
+      color: amberShade(i, rows.length),
+    }))
+  }, [holdings.data, propertyById])
+
   const heroUrl = publicAssetUrl(settings?.dashboard_hero_storage_path)
   const recentUpdates = updates.items.slice(0, 5)
 
@@ -46,54 +59,39 @@ export default function DashboardPage() {
     <>
       <h1 className="page-title serif">Dashboard</h1>
       <div className="dash-top">
-        <div>
-          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
-            Welcome back, {investorUser?.name?.split(' ')[0] ?? ''}.
+        <div className="dash-top-left">
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
+              Welcome back, {investorUser?.name?.split(' ')[0] ?? ''}.
+            </div>
+            <div className="page-sub" style={{ marginBottom: 0 }}>
+              Here's an overview of your investments.
+            </div>
           </div>
-          <div className="page-sub" style={{ marginBottom: 0 }}>
-            Here's an overview of your investments.
+          <div className="card portfolio-summary-card">
+            <PortfolioAllocationChart slices={allocationSlices} centerNumber={summary.totalInvestments} centerLabel="Properties" />
+            <div className="portfolio-legend">
+              {allocationSlices.length === 0 && <div style={{ color: 'var(--text-faint)' }}>No investments yet.</div>}
+              {allocationSlices.map((s) => (
+                <div className="portfolio-legend-row" key={s.id}>
+                  <span className="portfolio-legend-dot" style={{ background: s.color }} />
+                  <span className="portfolio-legend-name">{s.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="portfolio-stats">
+              <div>
+                <div className="slabel">Total Initial Investment</div>
+                <div className="sval">{fmtCurrency(summary.totalInvested)}</div>
+              </div>
+              <div>
+                <div className="slabel">Total Latest Investment</div>
+                <div className="sval">{fmtCurrency(summary.totalAssetValue)}</div>
+              </div>
+            </div>
           </div>
         </div>
         <div className="dash-hero" style={heroUrl ? { backgroundImage: `url('${heroUrl}')` } : undefined} />
-      </div>
-
-      <div className="card stat-panel">
-        <div className="stat-panel-title">Portfolio Summary</div>
-        <div className="stat-row3">
-          <div className="stat-item">
-            <div className="ic-circle">
-              <Icon name="building" />
-            </div>
-            <div>
-              <div className="slabel">Total Investments</div>
-              <div className="sval">{summary.totalInvestments}</div>
-              <div className="scap">properties</div>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="ic-circle">
-              <Icon name="clock" />
-            </div>
-            <div>
-              <div className="slabel">Total Invested</div>
-              <div className="sval">{fmtCurrency(summary.totalInvested)}</div>
-              <div className="scap">across all properties</div>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="ic-circle">
-              <Icon name="trendingUp" />
-            </div>
-            <div>
-              <div className="slabel">Total Asset Value</div>
-              <div className="sval">{fmtCurrency(summary.totalAssetValue)}</div>
-              <div className="scap">as at {fmtDate(summary.asAt)}</div>
-            </div>
-          </div>
-          <button className="btn-outline" style={{ marginLeft: 'auto' }} onClick={() => navigate('/investments')}>
-            VIEW ALL INVESTMENTS
-          </button>
-        </div>
       </div>
 
       <div className="dash-grid">
