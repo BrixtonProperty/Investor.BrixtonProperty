@@ -1,6 +1,6 @@
 export function fmtCurrency(n: number | null | undefined): string {
   if (n == null) return '—'
-  return '$' + n.toLocaleString('en-NZ')
+  return '$' + n.toLocaleString('en-NZ', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })
 }
 
 export function fmtDate(iso: string | null | undefined): string {

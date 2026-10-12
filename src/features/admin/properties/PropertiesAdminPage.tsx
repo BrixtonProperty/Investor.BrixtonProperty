@@ -20,6 +20,8 @@ export default function PropertiesAdminPage() {
     total_value: '',
     initial_investment_amount: '',
     total_equity_invested: '',
+    total_rent: '',
+    return_pct: '',
     loan_value: '',
     valuation_date: new Date().toISOString().slice(0, 10),
     type: '',
@@ -38,6 +40,8 @@ export default function PropertiesAdminPage() {
         total_value: Number(form.total_value),
         initial_investment_amount: form.initial_investment_amount ? Number(form.initial_investment_amount) : null,
         total_equity_invested: form.total_equity_invested ? Number(form.total_equity_invested) : null,
+        total_rent: form.total_rent ? Number(form.total_rent) : null,
+        return_pct: form.return_pct ? Number(form.return_pct) : null,
         loan_value: form.loan_value ? Number(form.loan_value) : null,
         valuation_date: form.valuation_date,
         type: form.type,
@@ -141,6 +145,26 @@ export default function PropertiesAdminPage() {
               placeholder="Total equity invested into the property at purchase"
               value={form.total_equity_invested}
               onChange={(e) => setForm({ ...form, total_equity_invested: e.target.value })}
+            />
+            <label className="field-label">Total Rent ($)</label>
+            <input
+              className="form-input"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Total rent received from tenants"
+              value={form.total_rent}
+              onChange={(e) => setForm({ ...form, total_rent: e.target.value })}
+            />
+            <label className="field-label">Return (%)</label>
+            <input
+              className="form-input"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Return for this property, e.g. 7.25"
+              value={form.return_pct}
+              onChange={(e) => setForm({ ...form, return_pct: e.target.value })}
             />
             <label className="field-label">Loan Value ($)</label>
             <input

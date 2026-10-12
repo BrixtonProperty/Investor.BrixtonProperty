@@ -3,9 +3,11 @@ import { useProperty } from '../../../queries/properties'
 import { usePropertyPhotos, useSignedPhotoUrls } from '../../../queries/propertyPhotos'
 import { useDocuments } from '../../../queries/documents'
 import { useTenants } from '../../../queries/tenants'
+import { useTenancySchedule } from '../../../queries/tenancySchedules'
 import { fmtCurrency, fmtDate, fmtPct, fmtLeaseTerm } from '../../../lib/format'
 import { openDocument } from '../../../lib/signedUrl'
 import StatList from '../../../components/StatList'
+import TenancyScheduleCard from '../../../components/TenancyScheduleCard'
 import Icon from '../../../components/Icon'
 
 /** Read-only, admin's unscoped equivalent of the investor Property Detail page. */
@@ -16,6 +18,7 @@ export default function PortfolioPropertyDetailPage() {
   const photos = usePropertyPhotos(id)
   const documents = useDocuments(id)
   const tenants = useTenants(id)
+  const schedule = useTenancySchedule(id)
   const signed = useSignedPhotoUrls((photos.data ?? []).map((p) => p.storage_path))
 
   if (property.isLoading) return <div className="loading-state">Loading property…</div>
@@ -50,8 +53,8 @@ export default function PortfolioPropertyDetailPage() {
       </div>
       <div className="detail-desc">{p.description}</div>
 
-      <div className="detail-grid">
-        <div className="card">
+      <div className={'detail-grid' + (schedule.data ? ' with-schedule' : '')}>
+        <div className="card area-overview">
           <div className="section-label">INVESTMENT OVERVIEW</div>
           <StatList
             rows={[
@@ -71,6 +74,8 @@ export default function PortfolioPropertyDetailPage() {
                 label: 'Total Equity Invested',
                 value: p.total_equity_invested != null ? fmtCurrency(p.total_equity_invested) : '—',
               },
+              { icon: '$', label: 'Total Rent', value: fmtCurrency(p.total_rent) },
+              { icon: '%', label: 'Return', value: fmtPct(p.return_pct) },
               { icon: '$', label: 'Loan Value', value: p.loan_value != null ? fmtCurrency(p.loan_value) : '—' },
               {
                 icon: '%',
@@ -79,7 +84,6 @@ export default function PortfolioPropertyDetailPage() {
                 caption: 'Loan Value ÷ Latest Valuation',
               },
               { icon: <Icon name="trendingUp" size={14} />, label: 'Property Type', value: p.type || '—' },
-              { icon: <Icon name="pin" size={14} />, label: 'Location', value: p.location },
               { icon: <Icon name="building" size={14} />, label: 'Net Lettable Area (NLA)', value: p.size || '—' },
               { icon: '%', label: 'Occupancy', value: p.occupancy || '—' },
               { icon: <Icon name="calendar" size={14} />, label: 'Year Built / Renovated', value: p.year_built ?? '—' },
@@ -87,7 +91,7 @@ export default function PortfolioPropertyDetailPage() {
           />
         </div>
 
-        <div className="card">
+        <div className="card area-photos">
           <div className="section-label">PROPERTY PHOTOS</div>
           <div className="photo-grid">
             <div className="photo-main" style={heroUrl ? { backgroundImage: `url('${heroUrl}')` } : undefined} />
@@ -113,7 +117,7 @@ export default function PortfolioPropertyDetailPage() {
           </div>
         </div>
 
-        <div className="card">
+        <div className="card area-docs">
           <div className="section-label">LATEST DOCUMENTS</div>
           <div className="doc-list">
             {recentDocs.length === 0 && (
@@ -137,6 +141,8 @@ export default function PortfolioPropertyDetailPage() {
             </button>
           </div>
         </div>
+
+        {schedule.data && <TenancyScheduleCard schedule={schedule.data} />}
       </div>
 
       <div className="card" style={{ marginTop: 22 }}>

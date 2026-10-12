@@ -8,6 +8,7 @@ import { useMergedUpdates } from '../../queries/updatesFeed'
 import { useSiteSettings } from '../../queries/siteSettings'
 import { publicAssetUrl } from '../../lib/signedUrl'
 import { fmtCurrency, fmtDate, fmtPct } from '../../lib/format'
+import { weightedReturn } from '../../lib/returns'
 import Icon from '../../components/Icon'
 import PortfolioAllocationChart, { amberShade } from '../../components/PortfolioAllocationChart'
 
@@ -36,6 +37,14 @@ export default function DashboardPage() {
     }
   }, [holdings.data])
 
+  const portfolioReturn = useMemo(
+    () =>
+      weightedReturn(
+        (holdings.data ?? []).map((h) => ({ weight: h.invested_amount, ret: propertyById.get(h.property_id)?.return_pct })),
+      ),
+    [holdings.data, propertyById],
+  )
+
   // Largest holding first -- gets the darkest amber, fading to pale gold for
   // the smallest, so the ring's color intensity tracks its share visually.
   const allocationSlices = useMemo(() => {
@@ -57,15 +66,21 @@ export default function DashboardPage() {
 
   return (
     <>
-      <h1 className="page-title serif">Dashboard</h1>
       <div className="dash-top">
         <div className="dash-top-left">
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
-              Welcome back, {investorUser?.name?.split(' ')[0] ?? ''}.
+          <h1 className="page-title serif">Dashboard</h1>
+          <div className="dash-greeting-row">
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
+                Welcome back, {investorUser?.name?.split(' ')[0] ?? ''}.
+              </div>
+              <div className="page-sub" style={{ marginBottom: 0 }}>
+                Here's an overview of your investments.
+              </div>
             </div>
-            <div className="page-sub" style={{ marginBottom: 0 }}>
-              Here's an overview of your investments.
+            <div className="dash-return">
+              <div className="slabel">Return</div>
+              <div className="sval">{fmtPct(portfolioReturn)}</div>
             </div>
           </div>
           <div className="card portfolio-summary-card">

@@ -6,7 +6,8 @@ import { usePropertyThumbnails } from '../../../queries/propertyPhotos'
 import { useMergedUpdates } from '../../../queries/updatesFeed'
 import { useSiteSettings } from '../../../queries/siteSettings'
 import { publicAssetUrl } from '../../../lib/signedUrl'
-import { fmtCurrency, fmtDate } from '../../../lib/format'
+import { fmtCurrency, fmtDate, fmtPct } from '../../../lib/format'
+import { weightedReturn } from '../../../lib/returns'
 import PortfolioAllocationChart, { amberShade } from '../../../components/PortfolioAllocationChart'
 
 /** Admin's unscoped equivalent of the investor Dashboard -- totals across every
@@ -30,6 +31,12 @@ export default function PortfolioDashboardPage() {
     }
   }, [properties.data])
 
+  const portfolioReturn = useMemo(
+    () =>
+      weightedReturn((properties.data ?? []).map((p) => ({ weight: p.initial_investment_amount ?? 0, ret: p.return_pct }))),
+    [properties.data],
+  )
+
   // Largest holding first -- gets the darkest amber, fading to pale gold for
   // the smallest, matching the investor Dashboard's own allocation chart.
   const allocationSlices = useMemo(() => {
@@ -50,15 +57,21 @@ export default function PortfolioDashboardPage() {
 
   return (
     <>
-      <h1 className="page-title serif">Portfolio</h1>
       <div className="dash-top">
         <div className="dash-top-left">
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
-              Welcome back, {investorUser?.name?.split(' ')[0] ?? ''}.
+          <h1 className="page-title serif">Portfolio</h1>
+          <div className="dash-greeting-row">
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
+                Welcome back, {investorUser?.name?.split(' ')[0] ?? ''}.
+              </div>
+              <div className="page-sub" style={{ marginBottom: 0 }}>
+                An overview of every property Brixton manages.
+              </div>
             </div>
-            <div className="page-sub" style={{ marginBottom: 0 }}>
-              An overview of every property Brixton manages.
+            <div className="dash-return">
+              <div className="slabel">Return</div>
+              <div className="sval">{fmtPct(portfolioReturn)}</div>
             </div>
           </div>
           <div className="card portfolio-summary-card">

@@ -47,6 +47,8 @@ export type Property = {
   initial_investment_amount: number | null
   total_equity_invested: number | null
   loan_value: number | null
+  total_rent: number | null
+  return_pct: number | null
   type: string
   size: string | null
   occupancy: string | null
@@ -64,6 +66,17 @@ export type PropertyTenant = {
   lease_expiry: string | null
   right_of_renewal: string | null
   description: string
+  created_at: string
+  updated_at: string
+}
+
+export type PropertyTenancySchedule = {
+  id: string
+  property_id: string
+  as_at: string
+  file_name: string | null
+  columns: string[]
+  rows: string[][]
   created_at: string
   updated_at: string
 }
@@ -174,6 +187,7 @@ export type Database = {
       documents: TableDef<DocumentRow>
       notices: TableDef<Notice>
       property_tenants: TableDef<PropertyTenant>
+      property_tenancy_schedules: TableDef<PropertyTenancySchedule>
       site_settings: TableDef<SiteSettings>
       auth_event_log: TableDef<AuthEventLog>
     }
