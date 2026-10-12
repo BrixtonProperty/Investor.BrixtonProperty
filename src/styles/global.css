@@ -18,7 +18,7 @@ a{color:inherit;text-decoration:none;}
 button{font-family:inherit;}
 input, select, textarea{ font-family:inherit; }
 
-.app{ display:flex; min-height:100vh; }
+.app{ display:flex; min-height:100vh; background:var(--page-bg); }
 
 /* ---------- Sidebar ---------- */
 .sidebar{
@@ -70,7 +70,7 @@ h1.page-title{ font-family:'Montserrat',sans-serif; font-weight:500; font-size:3
 .page-sub{ color:var(--text-dim); font-size:14px; margin-bottom:26px; }
 .page-head-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:20px; }
 
-.card{ background:var(--panel); border:1px solid var(--border); border-radius:10px; }
+.card{ background:var(--panel); border:1px solid var(--border); border-radius:10px; box-shadow:var(--card-shadow); }
 .view-all{ font-size:12px; color:var(--orange); cursor:pointer; font-weight:600; border:none; background:none; }
 .btn-outline{
   display:inline-flex; align-items:center; justify-content:center; gap:6px;
@@ -161,7 +161,7 @@ h1.page-title{ font-family:'Montserrat',sans-serif; font-weight:500; font-size:3
 .prop-stats{ display:flex; flex-wrap:wrap; gap:10px 16px; border-top:1px solid var(--border); padding-top:12px; }
 .prop-stats div{ font-size:13px; flex:1 1 40%; }
 .prop-stats .plabel{ font-size:10px; color:var(--text-faint); letter-spacing:.5px; margin-bottom:3px; }
-.add-tile{ border:2px dashed var(--border); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:350px; cursor:pointer; color:var(--text-faint); background:none; }
+.add-tile{ border:2px dashed #d3d3cf; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:350px; cursor:pointer; color:var(--text-faint); background:none; }
 .add-tile:hover{ border-color:var(--orange); color:var(--orange); }
 .add-tile .plus{ font-size:28px; }
 
@@ -381,7 +381,7 @@ h1.page-title{ font-family:'Montserrat',sans-serif; font-weight:500; font-size:3
 .error-state{ color:var(--danger); }
 .empty-state{ padding:40px 20px; text-align:center; color:var(--text-faint); font-size:13px; }
 
-.center-screen{ min-height:100vh; display:flex; align-items:center; justify-content:center; }
+.center-screen{ min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--page-bg); }
 
 .mobile-menu-btn{ display:none; border:none; background:none; padding:6px; margin-right:auto; color:var(--text); cursor:pointer; }
 .mobile-nav-backdrop{ display:none; }
