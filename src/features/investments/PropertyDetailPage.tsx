@@ -51,34 +51,35 @@ export default function PropertyDetailPage() {
       </div>
       <div className="detail-desc">{p.description}</div>
 
-      <div className="detail-grid">
-        <div className="card">
-          <div className="section-label">INVESTMENT OVERVIEW</div>
-          <StatList
-            rows={[
-              {
-                icon: '$',
-                label: 'Latest Valuation',
-                value: fmtCurrency(p.total_value),
-                caption: `As at ${fmtDate(p.valuation_date)}`,
-              },
-              { icon: '%', label: 'Your Ownership', value: holding.data ? fmtPct(holding.data.ownership_pct) : '—' },
-              { icon: '$', label: 'Your Initial Investment', value: holding.data ? fmtCurrency(holding.data.invested_amount) : '—' },
-              { icon: '$', label: 'Current Rent', value: fmtCurrency(p.total_rent) },
-              { icon: '%', label: 'Distribution Rate', value: fmtPct(p.return_pct) },
-              {
-                icon: '%',
-                label: 'LVR',
-                value: p.loan_value != null && p.total_value ? fmtPct((p.loan_value / p.total_value) * 100) : '—',
-                caption: 'Loan Value ÷ Latest Valuation',
-              },
-              { icon: <Icon name="trendingUp" size={14} />, label: 'Property Type', value: p.type || '—' },
-              { icon: <Icon name="building" size={14} />, label: 'Net Lettable Area (NLA)', value: p.size || '—' },
-              { icon: '%', label: 'Occupancy', value: p.occupancy || '—' },
-            ]}
-          />
-        </div>
+      <div className="card">
+        <div className="section-label">INVESTMENT OVERVIEW</div>
+        <StatList
+          columns={2}
+          rows={[
+            {
+              icon: '$',
+              label: 'Latest Valuation',
+              value: fmtCurrency(p.total_value),
+              caption: `As at ${fmtDate(p.valuation_date)}`,
+            },
+            {
+              icon: '%',
+              label: 'LVR',
+              value: p.loan_value != null && p.total_value ? fmtPct((p.loan_value / p.total_value) * 100) : '—',
+              caption: 'Loan Value ÷ Latest Valuation',
+            },
+            { icon: '%', label: 'Your Ownership', value: holding.data ? fmtPct(holding.data.ownership_pct) : '—' },
+            { icon: '%', label: 'Distribution Rate', value: fmtPct(p.return_pct) },
+            { icon: '$', label: 'Your Initial Investment', value: holding.data ? fmtCurrency(holding.data.invested_amount) : '—' },
+            { icon: <Icon name="trendingUp" size={14} />, label: 'Property Type', value: p.type || '—' },
+            { icon: '$', label: 'Current Rent', value: fmtCurrency(p.total_rent) },
+            { icon: <Icon name="building" size={14} />, label: 'Net Lettable Area (NLA)', value: p.size || '—' },
+            { icon: '%', label: 'Occupancy', value: p.occupancy || '—' },
+          ]}
+        />
+      </div>
 
+      <div className="detail-grid two">
         <div className="card">
           <div className="section-label">PROPERTY PHOTOS</div>
           <div className="photo-grid">

@@ -9,9 +9,11 @@ export interface StatRow {
   onEdit?: () => void
 }
 
-export default function StatList({ rows }: { rows: StatRow[] }) {
+/** `columns={2}` lays rows out left-to-right, row by row, so rows[0] and rows[1]
+ * share the top line, rows[2] and rows[3] the next, and so on. */
+export default function StatList({ rows, columns = 1 }: { rows: StatRow[]; columns?: 1 | 2 }) {
   return (
-    <div className="stat-list">
+    <div className={'stat-list' + (columns === 2 ? ' cols-2' : '')}>
       {rows.map((row) => (
         <div className="row" key={row.label}>
           <span className="ic">{row.icon}</span>

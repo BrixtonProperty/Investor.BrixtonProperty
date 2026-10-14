@@ -179,6 +179,13 @@ h1.page-title{ font-family:'Montserrat',sans-serif; font-weight:500; font-size:3
 .detail-desc{ font-size:13px; color:var(--text-dim); max-width:700px; line-height:1.6; margin-bottom:24px; }
 
 .detail-grid{ display:grid; grid-template-columns:1fr 1.3fr 1fr; gap:18px; align-items:start; }
+.detail-grid.two{ grid-template-columns:1.4fr 1fr; margin-top:18px; }
+.detail-grid.two .photo-main{ height:220px; }
+.detail-grid.two .photo-sub{ grid-template-columns:repeat(3,1fr); }
+.detail-grid.two .photo-sub div{ height:96px; }
+.stat-list.cols-2{ display:grid; grid-template-columns:1fr 1fr; }
+.stat-list.cols-2 .row:nth-child(-n+2){ border-top:none; }
+.stat-list.cols-2 .row:nth-child(even){ border-left:1px solid var(--border); }
 .section-label{ font-size:12px; letter-spacing:.5px; font-weight:700; color:var(--orange); padding:20px 20px 10px; border-bottom:2px solid var(--orange); margin:0 20px; display:flex; justify-content:space-between; align-items:center; }
 .stat-list .row{ display:flex; align-items:flex-start; gap:12px; padding:13px 20px; border-top:1px solid var(--border); }
 .stat-list .row:first-child{ border-top:none; }
@@ -381,7 +388,7 @@ h1.page-title{ font-family:'Montserrat',sans-serif; font-weight:500; font-size:3
   .mobile-nav-backdrop{
     display:block; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:150;
   }
-  .prop-grid, .detail-grid, .dash-top, .dash-grid{ grid-template-columns:1fr; }
+  .prop-grid, .detail-grid, .detail-grid.two, .dash-top, .dash-grid{ grid-template-columns:1fr; }
   .upd-property{ flex-direction:column; }
   .upd-thumb{ width:100%; height:160px; }
   .upd-info{ width:auto; padding:16px 20px 0; }
@@ -402,4 +409,10 @@ h1.page-title{ font-family:'Montserrat',sans-serif; font-weight:500; font-size:3
   .page-head-row > *:last-child .btn-outline,
   .page-head-row > *:last-child .btn-solid,
   .page-head-row > *:last-child .btn-danger{ flex:1; }
+}
+
+@media (max-width: 600px){
+  .stat-list.cols-2{ grid-template-columns:1fr; }
+  .stat-list.cols-2 .row:nth-child(2){ border-top:1px solid var(--border); }
+  .stat-list.cols-2 .row:nth-child(even){ border-left:none; }
 }
