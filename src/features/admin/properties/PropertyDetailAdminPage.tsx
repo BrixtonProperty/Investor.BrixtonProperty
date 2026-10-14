@@ -4,15 +4,12 @@ import { useArchiveProperty, useProperty, useUpdateProperty } from '../../../que
 import { usePropertyPhotos, useSignedPhotoUrls } from '../../../queries/propertyPhotos'
 import { useDocuments } from '../../../queries/documents'
 import { useTenants } from '../../../queries/tenants'
-import { useTenancySchedule, useDeleteTenancySchedule } from '../../../queries/tenancySchedules'
 import { useNotices, useCreateNotice, useUpdateNotice, useDeleteNotice } from '../../../queries/notices'
 import { fmtCurrency, fmtDate, fmtPct, fmtLeaseTerm } from '../../../lib/format'
 import { useToast } from '../../../components/Toast'
 import StatList from '../../../components/StatList'
 import Modal from '../../../components/Modal'
 import Icon from '../../../components/Icon'
-import TenancyScheduleCard from '../../../components/TenancyScheduleCard'
-import TenancyScheduleUploadModal from './TenancyScheduleUploadModal'
 import type { Property, Notice } from '../../../types/database.types'
 
 type PropertyForm = Pick<
@@ -40,8 +37,6 @@ export default function PropertyDetailAdminPage() {
   const photos = usePropertyPhotos(id)
   const documents = useDocuments(id)
   const tenants = useTenants(id)
-  const schedule = useTenancySchedule(id)
-  const deleteSchedule = useDeleteTenancySchedule()
   const notices = useNotices(id)
   const updateProperty = useUpdateProperty()
   const archiveProperty = useArchiveProperty()
@@ -53,7 +48,6 @@ export default function PropertyDetailAdminPage() {
   const signed = useSignedPhotoUrls((photos.data ?? []).map((p) => p.storage_path))
 
   const [editing, setEditing] = useState(false)
-  const [uploadingSchedule, setUploadingSchedule] = useState(false)
   const [form, setForm] = useState<PropertyForm | null>(null)
   const [noticeModal, setNoticeModal] = useState<'add' | Notice | null>(null)
   const [noticeForm, setNoticeForm] = useState({ title: '', description: '', notice_date: new Date().toISOString().slice(0, 10) })
@@ -96,17 +90,6 @@ export default function PropertyDetailAdminPage() {
       toast.show('Property updated.')
     } catch (err) {
       toast.show(err instanceof Error ? err.message : 'Could not save changes.', 'error')
-    }
-  }
-
-  async function handleRemoveSchedule() {
-    if (!id) return
-    if (!confirm('Remove the tenancy schedule? Investors will no longer see it.')) return
-    try {
-      await deleteSchedule.mutateAsync(id)
-      toast.show('Tenancy schedule removed.')
-    } catch (err) {
-      toast.show(err instanceof Error ? err.message : 'Could not remove the tenancy schedule.', 'error')
     }
   }
 
@@ -180,16 +163,16 @@ export default function PropertyDetailAdminPage() {
       </div>
       <div className="detail-desc">{p.description || <em style={{ color: 'var(--text-faint)' }}>No description yet.</em>}</div>
 
-      <div className="detail-grid with-schedule">
-        <div className="card area-overview">
+      <div className="detail-grid">
+        <div className="card">
           <div className="section-label">INVESTMENT OVERVIEW</div>
           <StatList
             rows={[
               { icon: '$', label: 'Latest Valuation', value: fmtCurrency(p.total_value), caption: `As at ${fmtDate(p.valuation_date)}` },
               { icon: '$', label: 'Initial Investment Amount', value: p.initial_investment_amount != null ? fmtCurrency(p.initial_investment_amount) : '—' },
-              { icon: '$', label: 'Total Equity Invested', value: p.total_equity_invested != null ? fmtCurrency(p.total_equity_invested) : '—' },
-              { icon: '$', label: 'Total Rent', value: fmtCurrency(p.total_rent) },
-              { icon: '%', label: 'Return', value: fmtPct(p.return_pct) },
+              { icon: '$', label: 'Capital Contributions', value: p.total_equity_invested != null ? fmtCurrency(p.total_equity_invested) : '—' },
+              { icon: '$', label: 'Current Rent', value: fmtCurrency(p.total_rent) },
+              { icon: '%', label: 'Distribution Rate', value: fmtPct(p.return_pct) },
               { icon: '$', label: 'Loan Value', value: p.loan_value != null ? fmtCurrency(p.loan_value) : '—' },
               {
                 icon: '%',
@@ -200,12 +183,11 @@ export default function PropertyDetailAdminPage() {
               { icon: <Icon name="trendingUp" size={14} />, label: 'Property Type', value: p.type || '—' },
               { icon: <Icon name="building" size={14} />, label: 'Net Lettable Area (NLA)', value: p.size || '—' },
               { icon: '%', label: 'Occupancy', value: p.occupancy || '—' },
-              { icon: <Icon name="calendar" size={14} />, label: 'Year Built / Renovated', value: p.year_built ?? '—' },
             ]}
           />
         </div>
 
-        <div className="card area-photos">
+        <div className="card">
           <div className="section-label">
             PROPERTY PHOTOS
             <button className="field-edit-btn" onClick={() => navigate(`/admin/properties/${id}/photos`)} type="button">
@@ -236,7 +218,7 @@ export default function PropertyDetailAdminPage() {
           </div>
         </div>
 
-        <div className="card area-docs">
+        <div className="card">
           <div className="section-label">
             LATEST DOCUMENTS
             <button className="field-edit-btn" onClick={() => navigate(`/admin/properties/${id}/documents`)} type="button">
@@ -260,24 +242,6 @@ export default function PropertyDetailAdminPage() {
             </button>
           </div>
         </div>
-
-        <TenancyScheduleCard
-          schedule={schedule.data}
-          loading={schedule.isLoading}
-          emptyText="No tenancy schedule yet. Upload an Excel file to publish one."
-          actions={
-            <>
-              <button className="field-edit-btn" onClick={() => setUploadingSchedule(true)} type="button">
-                {schedule.data ? 'REPLACE' : 'UPLOAD'}
-              </button>
-              {schedule.data && (
-                <button className="field-edit-btn" onClick={handleRemoveSchedule} type="button">
-                  REMOVE
-                </button>
-              )}
-            </>
-          }
-        />
       </div>
 
       <div className="card" style={{ marginTop: 22 }}>
@@ -344,8 +308,6 @@ export default function PropertyDetailAdminPage() {
         ))}
       </div>
 
-      {uploadingSchedule && id && <TenancyScheduleUploadModal propertyId={id} onClose={() => setUploadingSchedule(false)} />}
-
       {editing && (
         <Modal
           title="Edit Property Details"
@@ -388,33 +350,33 @@ export default function PropertyDetailAdminPage() {
               value={form.initial_investment_amount ?? ''}
               onChange={(e) => setForm({ ...form, initial_investment_amount: e.target.value ? Number(e.target.value) : null })}
             />
-            <label className="field-label">Total Equity Invested ($)</label>
+            <label className="field-label">Capital Contributions ($)</label>
             <input
               className="form-input"
               type="number"
               min="0"
               step="0.01"
-              placeholder="Total equity invested into the property at purchase"
+              placeholder="Total capital contributed into the property at purchase"
               value={form.total_equity_invested ?? ''}
               onChange={(e) => setForm({ ...form, total_equity_invested: e.target.value ? Number(e.target.value) : null })}
             />
-            <label className="field-label">Total Rent ($)</label>
+            <label className="field-label">Current Rent ($)</label>
             <input
               className="form-input"
               type="number"
               min="0"
               step="0.01"
-              placeholder="Total rent received from tenants"
+              placeholder="Current rent received from tenants"
               value={form.total_rent ?? ''}
               onChange={(e) => setForm({ ...form, total_rent: e.target.value ? Number(e.target.value) : null })}
             />
-            <label className="field-label">Return (%)</label>
+            <label className="field-label">Distribution Rate (%)</label>
             <input
               className="form-input"
               type="number"
               min="0"
               step="0.01"
-              placeholder="Return for this property, e.g. 7.25"
+              placeholder="Distribution rate for this property, e.g. 7.25"
               value={form.return_pct ?? ''}
               onChange={(e) => setForm({ ...form, return_pct: e.target.value ? Number(e.target.value) : null })}
             />

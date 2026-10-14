@@ -319,7 +319,7 @@ export default function InvestorDetailAdminPage() {
               onChange={(e) => setAssignForm({ ...assignForm, investedAmount: e.target.value })}
             />
             <p className="form-note">
-              Ownership % is calculated automatically from this amount and the property's Total Equity Invested.
+              Ownership % is calculated automatically from this amount and the property's Capital Contributions.
             </p>
           </form>
         </Modal>

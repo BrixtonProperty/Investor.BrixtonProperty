@@ -6,17 +6,15 @@ export default function Modal({
   onClose,
   children,
   footer,
-  wide,
 }: {
   title: string
   onClose: () => void
   children: ReactNode
   footer?: ReactNode
-  wide?: boolean
 }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className={'modal' + (wide ? ' wide' : '')} onClick={(e) => e.stopPropagation()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>{title}</h3>
           <button className="modal-close" onClick={onClose} type="button" aria-label="Close">

@@ -70,7 +70,7 @@ export default function PortfolioDashboardPage() {
               </div>
             </div>
             <div className="dash-return">
-              <div className="slabel">Return</div>
+              <div className="slabel">Distribution Rate</div>
               <div className="sval">{fmtPct(portfolioReturn)}</div>
             </div>
           </div>

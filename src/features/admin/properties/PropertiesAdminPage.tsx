@@ -136,33 +136,33 @@ export default function PropertiesAdminPage() {
               value={form.initial_investment_amount}
               onChange={(e) => setForm({ ...form, initial_investment_amount: e.target.value })}
             />
-            <label className="field-label">Total Equity Invested ($)</label>
+            <label className="field-label">Capital Contributions ($)</label>
             <input
               className="form-input"
               type="number"
               min="0"
               step="0.01"
-              placeholder="Total equity invested into the property at purchase"
+              placeholder="Total capital contributed into the property at purchase"
               value={form.total_equity_invested}
               onChange={(e) => setForm({ ...form, total_equity_invested: e.target.value })}
             />
-            <label className="field-label">Total Rent ($)</label>
+            <label className="field-label">Current Rent ($)</label>
             <input
               className="form-input"
               type="number"
               min="0"
               step="0.01"
-              placeholder="Total rent received from tenants"
+              placeholder="Current rent received from tenants"
               value={form.total_rent}
               onChange={(e) => setForm({ ...form, total_rent: e.target.value })}
             />
-            <label className="field-label">Return (%)</label>
+            <label className="field-label">Distribution Rate (%)</label>
             <input
               className="form-input"
               type="number"
               min="0"
               step="0.01"
-              placeholder="Return for this property, e.g. 7.25"
+              placeholder="Distribution rate for this property, e.g. 7.25"
               value={form.return_pct}
               onChange={(e) => setForm({ ...form, return_pct: e.target.value })}
             />

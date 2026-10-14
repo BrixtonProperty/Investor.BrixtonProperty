@@ -70,17 +70,6 @@ export type PropertyTenant = {
   updated_at: string
 }
 
-export type PropertyTenancySchedule = {
-  id: string
-  property_id: string
-  as_at: string
-  file_name: string | null
-  columns: string[]
-  rows: string[][]
-  created_at: string
-  updated_at: string
-}
-
 export type PropertyPhoto = {
   id: string
   property_id: string
@@ -105,8 +94,8 @@ export type InvestorHolding = {
   investor_property_id: string
   investor_account_id: string
   property_id: string
-  /** Derived (Initial Investment ÷ Total Equity Invested) -- null until the
-   * property's Total Equity Invested is set. */
+  /** Derived (Initial Investment ÷ Capital Contributions) -- null until the
+   * property's Capital Contributions is set. */
   ownership_pct: number | null
   invested_amount: number
   total_value: number
@@ -187,7 +176,6 @@ export type Database = {
       documents: TableDef<DocumentRow>
       notices: TableDef<Notice>
       property_tenants: TableDef<PropertyTenant>
-      property_tenancy_schedules: TableDef<PropertyTenancySchedule>
       site_settings: TableDef<SiteSettings>
       auth_event_log: TableDef<AuthEventLog>
     }
